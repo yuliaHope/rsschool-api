@@ -8,7 +8,6 @@ import {
   QuestionCircleOutlined,
 } from '@ant-design/icons';
 import { Tag, Tooltip } from 'antd';
-import { EventTypeColor, EventTypeToName } from 'components/Schedule/model';
 
 export function dateRenderer(value: string | null) {
   return value ? moment(value).format('YYYY-MM-DD') : '';
@@ -52,17 +51,13 @@ export function tagsRenderer(values: (number | string)[]) {
   return <span>{values.map(v => renderTag(v))}</span>;
 }
 
-function renderTag(value: number | string, color?: string) {
+export function renderTag(value: number | string, color?: string) {
   return (
     <Tag color={color} key={value}>
       {value}
     </Tag>
   );
 }
-
-export const eventColorTagRenderer = (value: keyof typeof EventTypeColor) => (
-  <Tag color={EventTypeColor[value]}>{EventTypeToName[value] || value}</Tag>
-);
 
 export function stringTrimRenderer(value: string) {
   return value && value.length > 20 ? `${value.slice(0, 20)}...` : value;
