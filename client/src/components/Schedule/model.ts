@@ -45,3 +45,5 @@ export const EventTypeToName: Record<string, string> = {
   'codewars:stage1': 'codewars',
   'codewars:stage2': 'codewars',
 };
+
+export type ViewMode = 'calendar' | 'table' | 'list';

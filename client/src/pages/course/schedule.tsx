@@ -9,6 +9,7 @@ import { TIMEZONES } from '../../configs/timezones';
 import { useAsync, useLocalStorage } from 'react-use';
 import { useLoading } from 'components/useLoading';
 import { isMobileOnly } from 'mobile-device-detect';
+import { ViewMode } from 'components/Schedule/model';
 
 const { Option } = Select;
 const LOCAL_VIEW_MODE = 'scheduleViewMode';
@@ -39,31 +40,23 @@ export function SchedulePage(props: CoursePageProps) {
     [courseService],
   );
 
-  let schedule;
+  const mapScheduleViewToComponent = {
+    table: TableView,
+    list: ListView,
+    calendar: CalendarView,
+  };
 
-  switch (scheduleViewMode) {
-    case 'Table':
-      schedule = <TableView data={data} timeZone={timeZone} />;
-      break;
-    case 'List':
-      schedule = <ListView data={data} timeZone={timeZone} />;
-      break;
-    case 'Calendar':
-      schedule = <CalendarView data={data} timeZone={timeZone} />;
-      break;
-    default:
-      schedule = <TableView data={data} timeZone={timeZone} />;
-      break;
-  }
+  const viewMode = (scheduleViewMode || 'table') as ViewMode;
+  const ScheduleView = mapScheduleViewToComponent[viewMode];
 
   return (
     <PageLayout loading={loading} title="Schedule" githubId={props.session.githubId}>
       <Row justify="start" gutter={[16, 16]}>
         <Col>
           <Select style={{ width: 100 }} defaultValue={scheduleViewMode} onChange={setScheduleViewMode}>
-            <Option value="Table">Table</Option>
-            <Option value="List">List</Option>
-            <Option value="Calendar">Calendar</Option>
+            <Option value="table">Table</Option>
+            <Option value="list">List</Option>
+            <Option value="calendar">Calendar</Option>
           </Select>
         </Col>
         <Col>
@@ -81,7 +74,7 @@ export function SchedulePage(props: CoursePageProps) {
           </Select>
         </Col>
       </Row>
-      {schedule}
+      <ScheduleView data={data} timeZone={timeZone} />
     </PageLayout>
   );
 }
@@ -119,10 +112,10 @@ const getDefaultViewMode = (): string => {
   }
 
   if (isMobileOnly) {
-    return 'List';
+    return 'list';
   }
 
-  return 'Table';
+  return 'table';
 };
 
 export default withCourseData(withSession(SchedulePage));
