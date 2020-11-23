@@ -9,7 +9,7 @@ import { TIMEZONES } from '../../configs/timezones';
 import { useAsync, useLocalStorage } from 'react-use';
 import { useLoading } from 'components/useLoading';
 import { isMobileOnly } from 'mobile-device-detect';
-import { ViewMode } from 'components/Schedule/model';
+import { ViewMode, ViewModeType } from 'components/Schedule/model';
 
 const { Option } = Select;
 const LOCAL_VIEW_MODE = 'scheduleViewMode';
@@ -41,22 +41,22 @@ export function SchedulePage(props: CoursePageProps) {
   );
 
   const mapScheduleViewToComponent = {
-    table: TableView,
-    list: ListView,
-    calendar: CalendarView,
+    [ViewMode.table]: TableView,
+    [ViewMode.list]: ListView,
+    [ViewMode.calendar]: CalendarView,
   };
 
-  const viewMode = (scheduleViewMode || 'table') as ViewMode;
-  const ScheduleView = mapScheduleViewToComponent[viewMode];
+  const viewMode = scheduleViewMode as ViewModeType;
+  const ScheduleView = mapScheduleViewToComponent[viewMode] || TableView;
 
   return (
     <PageLayout loading={loading} title="Schedule" githubId={props.session.githubId}>
       <Row justify="start" gutter={[16, 16]}>
         <Col>
           <Select style={{ width: 100 }} defaultValue={scheduleViewMode} onChange={setScheduleViewMode}>
-            <Option value="table">Table</Option>
-            <Option value="list">List</Option>
-            <Option value="calendar">Calendar</Option>
+            <Option value={ViewMode.table}>{ViewMode.table}</Option>
+            <Option value={ViewMode.list}>{ViewMode.list}</Option>
+            <Option value={ViewMode.calendar}>{ViewMode.calendar}</Option>
           </Select>
         </Col>
         <Col>
@@ -104,7 +104,7 @@ const createCourseEventFromTask = (task: CourseTaskDetails, type: string): Cours
   } as CourseEvent;
 };
 
-const getDefaultViewMode = (): string => {
+const getDefaultViewMode = () => {
   const localView = localStorage.getItem(LOCAL_VIEW_MODE);
 
   if (localView) {
@@ -112,10 +112,10 @@ const getDefaultViewMode = (): string => {
   }
 
   if (isMobileOnly) {
-    return 'list';
+    return ViewMode.list;
   }
 
-  return 'table';
+  return ViewMode.table;
 };
 
 export default withCourseData(withSession(SchedulePage));
