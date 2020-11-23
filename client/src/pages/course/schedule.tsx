@@ -9,7 +9,7 @@ import { TIMEZONES } from '../../configs/timezones';
 import { useAsync, useLocalStorage } from 'react-use';
 import { useLoading } from 'components/useLoading';
 import { isMobileOnly } from 'mobile-device-detect';
-import { ViewMode, ViewModeType } from 'components/Schedule/model';
+import { ViewMode } from 'components/Schedule/model';
 
 const { Option } = Select;
 const LOCAL_VIEW_MODE = 'scheduleViewMode';
@@ -41,12 +41,12 @@ export function SchedulePage(props: CoursePageProps) {
   );
 
   const mapScheduleViewToComponent = {
-    [ViewMode.table]: TableView,
-    [ViewMode.list]: ListView,
-    [ViewMode.calendar]: CalendarView,
+    [ViewMode.TABLE]: TableView,
+    [ViewMode.LIST]: ListView,
+    [ViewMode.CALENDAR]: CalendarView,
   };
 
-  const viewMode = scheduleViewMode as ViewModeType;
+  const viewMode = scheduleViewMode as ViewMode;
   const ScheduleView = mapScheduleViewToComponent[viewMode] || TableView;
 
   return (
@@ -54,9 +54,9 @@ export function SchedulePage(props: CoursePageProps) {
       <Row justify="start" gutter={[16, 16]}>
         <Col>
           <Select style={{ width: 100 }} defaultValue={scheduleViewMode} onChange={setScheduleViewMode}>
-            <Option value={ViewMode.table}>{ViewMode.table}</Option>
-            <Option value={ViewMode.list}>{ViewMode.list}</Option>
-            <Option value={ViewMode.calendar}>{ViewMode.calendar}</Option>
+            <Option value={ViewMode.TABLE}>Table</Option>
+            <Option value={ViewMode.LIST}>List</Option>
+            <Option value={ViewMode.CALENDAR}>Calendar</Option>
           </Select>
         </Col>
         <Col>
@@ -112,10 +112,10 @@ const getDefaultViewMode = () => {
   }
 
   if (isMobileOnly) {
-    return ViewMode.list;
+    return ViewMode.LIST;
   }
 
-  return ViewMode.table;
+  return ViewMode.TABLE;
 };
 
 export default withCourseData(withSession(SchedulePage));
