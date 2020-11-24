@@ -4,6 +4,7 @@ import { GithubAvatar } from 'components/GithubAvatar';
 import css from 'styled-jsx/css';
 
 import { EyeOutlined, EditOutlined, LogoutOutlined, SaveTwoTone } from '@ant-design/icons';
+import UserSettings from './UserSettings/UserSettings';
 
 type Props = {
   username: string;
@@ -67,6 +68,7 @@ export function Header(props: Props) {
         <b>{props.title}</b> {props.courseName}
       </div>
       <div className="profile">
+        {props.title === 'Schedule' && <UserSettings />}
         {isSaveButtonVisible && (
           <Button danger ghost size="large" style={{ marginRight: 16, height: 38 }} onClick={props.onSaveClick}>
             <SaveTwoTone twoToneColor={['#f5222d', '#fff1f0']} />
