@@ -2,17 +2,13 @@ import React from 'react';
 import { Collapse, Tag } from 'antd';
 import { BgColorsOutlined } from '@ant-design/icons';
 import { GithubPicker } from 'react-color';
-import { pickerColors, mockedTags as tags, setTagColor, getTagColor } from './userSettingsHandlers';
+import { pickerColors, mockedTags as tags, setTagColor, getTagColor, DEFAULT_COLOR } from './userSettingsHandlers';
+import { useLocalStorage } from 'react-use';
 
 const SettingsTagColor: React.FC = () => {
   const { Panel } = Collapse;
-  const [, setState] = React.useState();
-
-  function handleUpdate() {
-    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-    // @ts-ignore
-    setState({});
-  }
+  const defaultTagColor = JSON.stringify({ default: DEFAULT_COLOR });
+  const [storedTagColors, setStoredTagColors] = useLocalStorage<string>('tagColors', defaultTagColor);
 
   const collapseTags = (
     <Collapse accordion ghost>
@@ -23,9 +19,9 @@ const SettingsTagColor: React.FC = () => {
               <Tag
                 style={{
                   cursor: 'pointer',
-                  borderColor: getTagColor(item.name),
-                  color: getTagColor(item.name),
-                  backgroundColor: `${getTagColor(item.name)}10`,
+                  borderColor: getTagColor(item.name, storedTagColors),
+                  color: getTagColor(item.name, storedTagColors),
+                  backgroundColor: `${getTagColor(item.name, storedTagColors)}10`,
                 }}
               >
                 {item.name}
@@ -37,11 +33,7 @@ const SettingsTagColor: React.FC = () => {
               colors={pickerColors}
               triangle="hide"
               width={'138px'}
-              onChange={(e) => {
-                setTagColor(e, item.name);
-                handleUpdate();
-              }
-              }
+              onChange={(e) => setTagColor(e, item.name, setStoredTagColors, storedTagColors)}
             />
           </Panel>
         );
