@@ -1,6 +1,6 @@
 import React, { useCallback } from 'react';
+import TagColorIcon from './TagColorIcon';
 import { Collapse, Tag } from 'antd';
-import { BgColorsOutlined } from '@ant-design/icons';
 import { GithubPicker } from 'react-color';
 import { pickerColors, mockedTags as tags, setTagColor, getTagStyle, DEFAULT_COLOR } from './userSettingsHandlers';
 import { useLocalStorage } from 'react-use';
@@ -44,7 +44,7 @@ const TagColor: React.FC = () => {
   );
 
   return (
-    <Collapse expandIcon={() => <BgColorsOutlined style={{ fontSize: '20px', color: '#08c' }} />}>
+    <Collapse expandIcon={() => <TagColorIcon />}>
       <Panel header="Change Tag Color" key="tags">
         {collapseTags}
       </Panel>
