@@ -13,17 +13,17 @@ export const pickerColors = [
   '#F78DA7',
 ];
 
-export const DEFAULT_COLOR = '#308e00';
+export const DEFAULT_COLOR = { default: '#308e00' };
 
 export function setTagColor(e: IColorState, tagName: string, localStorageHook: (value: string) => void, storedTagColors: string | undefined) {
-  const parsedTagColors = JSON.parse(<string>storedTagColors) || {};
+  const parsedTagColors = <any>storedTagColors || {};
   parsedTagColors[tagName] = e.hex;
-  localStorageHook(JSON.stringify(parsedTagColors));
+  localStorageHook(parsedTagColors);
 }
 
 export function getTagColor(tagName: string, storedTagColors: string | undefined) {
-  const parsedTagColors = JSON.parse(<string>(storedTagColors)) || {};
-  return parsedTagColors[tagName] || DEFAULT_COLOR;
+  const parsedTagColors = <any>(storedTagColors) || {};
+  return parsedTagColors[tagName] || DEFAULT_COLOR.default;
 }
 
 export const mockedTags = [

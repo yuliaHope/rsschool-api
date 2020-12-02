@@ -7,8 +7,7 @@ import { useLocalStorage } from 'react-use';
 
 const SettingsTagColor: React.FC = () => {
   const { Panel } = Collapse;
-  const defaultTagColor = JSON.stringify({ default: DEFAULT_COLOR });
-  const [storedTagColors, setStoredTagColors] = useLocalStorage<string>('tagColors', defaultTagColor);
+  const [storedTagColors, setStoredTagColors] = useLocalStorage<any>('tagColors', DEFAULT_COLOR);
 
   const collapseTags = (
     <Collapse accordion ghost>
