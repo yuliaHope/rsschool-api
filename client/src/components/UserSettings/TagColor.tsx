@@ -5,7 +5,7 @@ import { GithubPicker } from 'react-color';
 import { pickerColors, mockedTags as tags, setTagColor, getTagColor, DEFAULT_COLOR } from './userSettingsHandlers';
 import { useLocalStorage } from 'react-use';
 
-const SettingsTagColor: React.FC = () => {
+const TagColor: React.FC = () => {
   const { Panel } = Collapse;
   const [storedTagColors, setStoredTagColors] = useLocalStorage<any>('tagColors', DEFAULT_COLOR);
 
@@ -49,4 +49,4 @@ const SettingsTagColor: React.FC = () => {
   );
 };
 
-export default SettingsTagColor;
+export default TagColor;

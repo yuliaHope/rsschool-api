@@ -1,24 +1,24 @@
 import React, { useState } from 'react';
 import { Button, Drawer } from 'antd';
 import { SettingOutlined } from '@ant-design/icons';
-import SettingsTagColor from './SettingsTagColor';
+import TagColor from './TagColor';
 
 
 const UserSettings: React.FC = () => {
-  const [isVisible, setIsVisible] = useState(false);
+  const [isOpen, setIsOpen] = useState(false);
   const showDrawer = () => {
-    setIsVisible(true);
+    setIsOpen(true);
   };
   const onClose = () => {
-    setIsVisible(false);
+    setIsOpen(false);
   };
 
   return (
     <>
       <Button icon={<SettingOutlined />} title='User settings' size='large' type="primary" onClick={showDrawer}/>
 
-      <Drawer title="User Settings" placement="right" closable={false} onClose={onClose} visible={isVisible}>
-        <SettingsTagColor />
+      <Drawer title="User Settings" placement="right" closable={false} onClose={onClose} visible={isOpen}>
+        <TagColor />
       </Drawer>
     </>
   );
