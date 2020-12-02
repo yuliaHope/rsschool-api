@@ -16,18 +16,17 @@ export const pickerColors = [
 
 export const DEFAULT_COLOR = { default: '#308e00' };
 
-export function setTagColor(e: IColorState, tagName: string, localStorageHook: (value: string) => void, storedTagColors: string | undefined) {
-  const parsedTagColors = <any>storedTagColors || {};
-  parsedTagColors[tagName] = e.hex;
-  localStorageHook(parsedTagColors);
+export function setTagColor(e: IColorState, tagName: string, localStorageHook: (value: object) => void, storedTagColors: object | undefined) {
+  const parsedTagColors = <any>(storedTagColors) || {};
+  localStorageHook({ ... parsedTagColors, [tagName]: e.hex })
 }
 
-export function getTagColor(tagName: string, storedTagColors: string | undefined) {
+export function getTagColor(tagName: string, storedTagColors: object | undefined) {
   const parsedTagColors = <any>(storedTagColors) || {};
   return parsedTagColors[tagName] || DEFAULT_COLOR.default;
 }
 
-export function getTagStyle(tagName: string, storedTagColors: string | undefined, styles?: CSSProperties) {
+export function getTagStyle(tagName: string, storedTagColors: object | undefined, styles?: CSSProperties) {
   const tagColor: string = getTagColor(tagName, storedTagColors);
   const style = {
     ...styles,

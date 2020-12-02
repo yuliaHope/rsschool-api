@@ -1,13 +1,21 @@
-import React from 'react';
+import React, { useCallback } from 'react';
 import { Collapse, Tag } from 'antd';
 import { BgColorsOutlined } from '@ant-design/icons';
 import { GithubPicker } from 'react-color';
 import { pickerColors, mockedTags as tags, setTagColor, getTagStyle, DEFAULT_COLOR } from './userSettingsHandlers';
 import { useLocalStorage } from 'react-use';
+import { ColorState as IColorState } from 'react-color';
 
 const TagColor: React.FC = () => {
   const { Panel } = Collapse;
   const [storedTagColors, setStoredTagColors] = useLocalStorage<any>('tagColors', DEFAULT_COLOR);
+
+  const memoizedSetTagColor = useCallback(
+    (e: IColorState, itemName, storedTagColors) => {
+      setTagColor(e, itemName, setStoredTagColors, storedTagColors);
+    },
+    [storedTagColors],
+  );
 
   const collapseTags = (
     <Collapse accordion ghost>
@@ -27,7 +35,7 @@ const TagColor: React.FC = () => {
               colors={pickerColors}
               triangle="hide"
               width={'138px'}
-              onChange={(e) => setTagColor(e, item.name, setStoredTagColors, storedTagColors)}
+              onChange={(e) => memoizedSetTagColor(e, item.name, storedTagColors)}
             />
           </Panel>
         );
