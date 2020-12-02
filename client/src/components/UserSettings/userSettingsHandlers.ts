@@ -27,7 +27,7 @@ export function getTagColor(tagName: string, storedTagColors: string | undefined
   return parsedTagColors[tagName] || DEFAULT_COLOR.default;
 }
 
-export function getTagColorStyle(tagName: string, storedTagColors: string | undefined, styles?: CSSProperties) {
+export function getTagStyle(tagName: string, storedTagColors: string | undefined, styles?: CSSProperties) {
   const tagColor: string = getTagColor(tagName, storedTagColors);
   const style = {
     ...styles,

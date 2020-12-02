@@ -2,7 +2,7 @@ import React from 'react';
 import { Collapse, Tag } from 'antd';
 import { BgColorsOutlined } from '@ant-design/icons';
 import { GithubPicker } from 'react-color';
-import { pickerColors, mockedTags as tags, setTagColor, getTagColorStyle, DEFAULT_COLOR } from './userSettingsHandlers';
+import { pickerColors, mockedTags as tags, setTagColor, getTagStyle, DEFAULT_COLOR } from './userSettingsHandlers';
 import { useLocalStorage } from 'react-use';
 
 const TagColor: React.FC = () => {
@@ -16,7 +16,7 @@ const TagColor: React.FC = () => {
           <Panel
             header={
               <Tag
-                style={getTagColorStyle(item.name, storedTagColors, { cursor: 'pointer' })}
+                style={getTagStyle(item.name, storedTagColors, { cursor: 'pointer' })}
               >
                 {item.name}
               </Tag>
