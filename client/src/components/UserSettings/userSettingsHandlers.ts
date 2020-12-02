@@ -1,4 +1,5 @@
 import { ColorState as IColorState } from 'react-color';
+import { CSSProperties } from 'react';
 
 export const pickerColors = [
   '#ff0000',
@@ -24,6 +25,17 @@ export function setTagColor(e: IColorState, tagName: string, localStorageHook: (
 export function getTagColor(tagName: string, storedTagColors: string | undefined) {
   const parsedTagColors = <any>(storedTagColors) || {};
   return parsedTagColors[tagName] || DEFAULT_COLOR.default;
+}
+
+export function getTagColorStyle(tagName: string, storedTagColors: string | undefined, styles?: CSSProperties) {
+  const tagColor: string = getTagColor(tagName, storedTagColors);
+  const style = {
+    ...styles,
+    borderColor: tagColor,
+    color: tagColor,
+    backgroundColor: `${tagColor}10`,
+  };
+  return style;
 }
 
 export const mockedTags = [
