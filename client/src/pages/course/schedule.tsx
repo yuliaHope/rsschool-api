@@ -1,5 +1,5 @@
 import { QuestionCircleOutlined, YoutubeOutlined } from '@ant-design/icons';
-import { Table, Tag, Row, Tooltip, Select } from 'antd';
+import { Table, Tag, Row, Tooltip, Select, Col } from 'antd';
 import { withSession, GithubUserLink, PageLayout } from 'components';
 import withCourseData from 'components/withCourseData';
 import { useState, useMemo } from 'react';
@@ -10,6 +10,7 @@ import moment from 'moment-timezone';
 import { TIMEZONES } from '../../configs/timezones';
 import { useAsync } from 'react-use';
 import { useLoading } from 'components/useLoading';
+import UserSettings from '../../components/UserSettings/UserSettings';
 
 enum EventTypeColor {
   deadline = 'red',
@@ -81,18 +82,23 @@ export function SchedulePage(props: CoursePageProps) {
   return (
     <PageLayout loading={loading} title="Schedule" githubId={props.session.githubId}>
       <Row justify="space-between" style={{ marginBottom: 16 }}>
-        <Select
-          style={{ width: 200 }}
-          placeholder="Please select a timezone"
-          defaultValue={timeZone}
-          onChange={setTimeZone}
-        >
-          {TIMEZONES.map(tz => (
-            <Select.Option key={tz} value={tz}>
-              {tz}
-            </Select.Option>
-          ))}
-        </Select>
+        <Col>
+          <Select
+            style={{ width: 200 }}
+            placeholder="Please select a timezone"
+            defaultValue={timeZone}
+            onChange={setTimeZone}
+          >
+            {TIMEZONES.map(tz => (
+              <Select.Option key={tz} value={tz}>
+                {tz}
+              </Select.Option>
+            ))}
+          </Select>
+        </Col>
+        <Col>
+          <UserSettings />
+        </Col>
       </Row>
       <Table
         rowKey={record => (record.event.type === TaskTypes.deadline ? `${record.id}d` : record.id).toString()}

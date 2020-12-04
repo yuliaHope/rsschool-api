@@ -15,7 +15,7 @@ const UserSettings: React.FC = () => {
 
   return (
     <>
-      <Button icon={<SettingOutlined />} title='User settings' size='large' type="primary" onClick={showDrawer} />
+      <Button icon={<SettingOutlined />} title='User settings' size='middle' type="primary" onClick={showDrawer} />
 
       <Drawer title="User Settings" placement="right" closable={false} onClose={onClose} visible={isOpen}>
         <TagColor />

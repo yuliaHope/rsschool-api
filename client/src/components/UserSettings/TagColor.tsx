@@ -8,7 +8,7 @@ import { ColorState as IColorState } from 'react-color';
 
 const TagColor: React.FC = () => {
   const { Panel } = Collapse;
-  const [storedTagColors, setStoredTagColors] = useLocalStorage<any>('tagColors', DEFAULT_COLOR);
+  const [storedTagColors, setStoredTagColors] = useLocalStorage<object>('tagColors', DEFAULT_COLOR);
 
   const memoizedSetTagColor = useCallback(
     (e: IColorState, itemName, storedTagColors) => {
