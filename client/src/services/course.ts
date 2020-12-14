@@ -72,6 +72,7 @@ export interface CourseEvent {
   broadcastUrl: string;
   special?: string;
   duration?: number;
+  isTask?: boolean;
 }
 
 export interface CourseUser {
@@ -116,6 +117,12 @@ export class CourseService {
     this.axios = globalAxios.create({ baseURL: `/api/course/${this.courseId}` });
   }
 
+  async getCourseTask(taskId: string) {
+    type Response = { data: CourseTaskDetails };
+    const result = await this.axios.get<Response>(`/task/${taskId}`);
+    return result.data.data;
+  }
+
   async getCourseTasks() {
     type Response = { data: CourseTask[] };
     const result = await this.axios.get<Response>('/tasks');
@@ -131,6 +138,11 @@ export class CourseService {
     type Response = { data: CourseTaskDetails[] };
     const result = await this.axios.get<Response>('/tasks/details');
     return result.data.data.sort(sortTasksByEndDate);
+  }
+
+  async getEventById(id:string) {
+    const result = await this.axios.get<{ data: CourseEvent }>(`/event/${id}`);
+    return result.data.data;
   }
 
   async getCourseEvents() {
