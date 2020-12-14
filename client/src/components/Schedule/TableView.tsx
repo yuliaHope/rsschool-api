@@ -4,6 +4,7 @@ import { Popconfirm, Table, Typography, Space, Form, Button, message } from 'ant
 import { ColumnsType } from 'antd/lib/table';
 import moment from 'moment-timezone';
 import mergeWith from 'lodash/mergeWith';
+import Link from 'next/link';
 import { GithubUserLink } from 'components';
 import {
   dateSorter,
@@ -27,9 +28,10 @@ type Props = {
   courseId: number;
   refreshData: Function;
   storedTagColors: object;
+  alias: string,
 };
 
-const getColumns = (timeZone: string, storedTagColors: object) => [
+const getColumns = (timeZone: string, storedTagColors: object, alias: string) => [
   {
     title: <SettingOutlined />,
     width: 20,
@@ -71,7 +73,12 @@ const getColumns = (timeZone: string, storedTagColors: object) => [
     title: 'Name',
     width: 150,
     dataIndex: ['event', 'name'],
-    render: (value: string) => <Text strong>{value}</Text>,
+    render: (value: string, row: any) => {
+      if (row.isTask) {
+        return <Link href={`/course/task/[taskDetails]?course=${alias}`} as={`/course/task/${row.id}?course=${alias}`}><a><Text style={{ width: '100%', height: '100%', display: 'block' }} strong>{value}</Text></a></Link>;
+      }
+      return <Link href={`/course/event/[eventDetails]?course=${alias}`} as={`/course/event/${row.id}?course=${alias}`}><a><Text style={{ width: '100%', height: '100%', display: 'block' }} strong>{value}</Text></a></Link>;
+    },
     ...getColumnSearchProps('event.name'),
     editable: true,
   },
@@ -108,7 +115,7 @@ const getColumns = (timeZone: string, storedTagColors: object) => [
   },
 ];
 
-export function TableView({ data, timeZone, isAdmin, courseId, refreshData, storedTagColors }: Props) {
+export function TableView({ data, timeZone, isAdmin, courseId, refreshData, storedTagColors, alias }: Props) {
   const [form] = Form.useForm();
   const [editingKey, setEditingKey] = useState('');
   const courseService = useMemo(() => new CourseService(courseId), [courseId]);
@@ -188,36 +195,37 @@ export function TableView({ data, timeZone, isAdmin, courseId, refreshData, stor
               </Popconfirm>
             </span>
           ) : (
-            <Space>
-              <Button
-                type="link"
-                style={{ padding: 0 }}
-                disabled={editingKey !== ''}
-                onClick={event => {
-                  event.stopPropagation();
-                  edit(record);
-                }}
-              >
-                Edit
-              </Button>
-              <Popconfirm
-                title="Sure to delete?"
-                onConfirm={() => {
-                  handleDelete(record.id);
-                }}
-              >
-                <Button type="link" style={{ padding: 0 }} disabled={editingKey !== ''}>
-                  Delete
+              <Space>
+                <Button
+                  type="link"
+                  style={{ padding: 0 }}
+                  disabled={editingKey !== ''}
+                  onClick={event => {
+                    event.stopPropagation();
+                    edit(record);
+                  }}
+                >
+                  Edit
                 </Button>
-              </Popconfirm>
-            </Space>
-          );
+                <Popconfirm
+                  title="Sure to delete?"
+                  onConfirm={() => {
+                    handleDelete(record.id);
+                  }}
+                >
+                  <Button type="link" style={{ padding: 0 }} disabled={editingKey !== ''}>
+                    Delete
+                  </Button>
+                </Popconfirm>
+              </Space>
+            );
         },
       },
     ];
   };
 
-  const columns = [...getColumns(timeZone, storedTagColors), ...getAdminColumn(isAdmin)] as ColumnsType<CourseEvent>;
+
+  const columns = [...getColumns(timeZone, storedTagColors, alias), ...getAdminColumn(isAdmin)] as ColumnsType<CourseEvent>;
 
   const mergedColumns = columns.map((col: any) => {
     if (!col.editable) {
