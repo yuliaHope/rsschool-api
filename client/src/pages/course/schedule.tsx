@@ -38,6 +38,13 @@ export function SchedulePage(props: CoursePageProps) {
 
   useAsync(withLoading(loadData), [courseService]);
 
+  function getDistinctTags(obj: CourseEvent[]) {
+    const setOfTags = new Set(obj.map(element => element.event.type));
+    return Array.from(setOfTags);
+  }
+
+  const tags = getDistinctTags(data);
+
   const mapScheduleViewToComponent = {
     [ViewMode.TABLE]: TableView,
     [ViewMode.LIST]: ListView,
@@ -72,7 +79,7 @@ export function SchedulePage(props: CoursePageProps) {
           </Select>
         </Col>
         <Col>
-          <UserSettings />
+          <UserSettings tags={tags} />
         </Col>
       </Row>
       <ScheduleView
