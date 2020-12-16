@@ -10,6 +10,8 @@ import { useAsync, useLocalStorage } from 'react-use';
 import { useLoading } from 'components/useLoading';
 import { isMobileOnly } from 'mobile-device-detect';
 import { ViewMode } from 'components/Schedule/model';
+import UserSettings from '../../components/UserSettings/UserSettings';
+
 
 const { Option } = Select;
 const LOCAL_VIEW_MODE = 'scheduleViewMode';
@@ -28,17 +30,13 @@ export function SchedulePage(props: CoursePageProps) {
   const [scheduleViewMode, setScheduleViewMode] = useLocalStorage<string>(LOCAL_VIEW_MODE, getDefaultViewMode());
   const courseService = useMemo(() => new CourseService(props.course.id), [props.course.id]);
 
-  useAsync(
-    withLoading(async () => {
-      const [events, tasks] = await Promise.all([
-        courseService.getCourseEvents(),
-        courseService.getCourseTasksDetails(),
-      ]);
-      const data = events.concat(tasksToEvents(tasks)).sort((a, b) => a.dateTime.localeCompare(b.dateTime));
-      setData(data);
-    }),
-    [courseService],
-  );
+  const loadData = async () => {
+    const [events, tasks] = await Promise.all([courseService.getCourseEvents(), courseService.getCourseTasksDetails()]);
+    const data = events.concat(tasksToEvents(tasks)).sort((a, b) => a.dateTime.localeCompare(b.dateTime));
+    setData(data);
+  };
+
+  useAsync(withLoading(loadData), [courseService]);
 
   const mapScheduleViewToComponent = {
     [ViewMode.TABLE]: TableView,
@@ -73,8 +71,17 @@ export function SchedulePage(props: CoursePageProps) {
             ))}
           </Select>
         </Col>
+        <Col>
+          <UserSettings />
+        </Col>
       </Row>
-      <ScheduleView data={data} timeZone={timeZone} />
+      <ScheduleView
+        data={data}
+        timeZone={timeZone}
+        isAdmin={props.session.isAdmin}
+        courseId={props.course.id}
+        refreshData={loadData}
+      />
     </PageLayout>
   );
 }
