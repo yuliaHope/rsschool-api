@@ -12,7 +12,6 @@ import { isMobileOnly } from 'mobile-device-detect';
 import { ViewMode } from 'components/Schedule/model';
 import UserSettings from '../../components/UserSettings/UserSettings';
 
-
 const { Option } = Select;
 const LOCAL_VIEW_MODE = 'scheduleViewMode';
 
