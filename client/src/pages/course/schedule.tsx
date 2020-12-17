@@ -56,7 +56,7 @@ export function SchedulePage(props: CoursePageProps) {
   const ScheduleView = mapScheduleViewToComponent[viewMode] || TableView;
   const filteredData = isOldEventsHidden ? relevantEvents : data;
 
-  const toggleHideOldEvents = () => {
+  const toggleOldEvents = () => {
     setOldEventsHidden(!isOldEventsHidden);
   };
 
@@ -88,7 +88,7 @@ export function SchedulePage(props: CoursePageProps) {
           <Tooltip title="Hide old events" mouseEnterDelay={1}>
             <Button
               type="primary"
-              onClick={toggleHideOldEvents}
+              onClick={toggleOldEvents}
               icon={isOldEventsHidden ? <EyeInvisibleOutlined /> : <EyeOutlined />}
             />
           </Tooltip>
