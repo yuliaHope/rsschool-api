@@ -30,9 +30,9 @@ export function SchedulePage(props: CoursePageProps) {
   const [data, setData] = useState<CourseEvent[]>([]);
   const [timeZone, setTimeZone] = useState(Intl.DateTimeFormat().resolvedOptions().timeZone);
   const [scheduleViewMode, setScheduleViewMode] = useLocalStorage<string>(LOCAL_VIEW_MODE, getDefaultViewMode());
-  const [isHideOldEvents, setHideOldEvents] = useLocalStorage<boolean>(LOCAL_HIDE_OLD_EVENTS, false);
+  const [isOldEventsHidden, setOldEventsHidden] = useLocalStorage<boolean>(LOCAL_HIDE_OLD_EVENTS, false);
   const courseService = useMemo(() => new CourseService(props.course.id), [props.course.id]);
-  const eventsWithoutOld = useMemo(() => {
+  const relevantEvents = useMemo(() => {
     const yesterday = moment.utc().subtract(1, 'day');
 
     return data.filter(({ dateTime }) => moment(dateTime).isAfter(yesterday, 'day'));
@@ -54,10 +54,10 @@ export function SchedulePage(props: CoursePageProps) {
 
   const viewMode = scheduleViewMode as ViewMode;
   const ScheduleView = mapScheduleViewToComponent[viewMode] || TableView;
-  const filteredData = isHideOldEvents ? eventsWithoutOld : data;
+  const filteredData = isOldEventsHidden ? relevantEvents : data;
 
-  const hideOldEvents = () => {
-    setHideOldEvents(!isHideOldEvents);
+  const toggleHideOldEvents = () => {
+    setOldEventsHidden(!isOldEventsHidden);
   };
 
   return (
@@ -88,8 +88,8 @@ export function SchedulePage(props: CoursePageProps) {
           <Tooltip title="Hide old events" mouseEnterDelay={1}>
             <Button
               type="primary"
-              onClick={hideOldEvents}
-              icon={isHideOldEvents ? <EyeInvisibleOutlined /> : <EyeOutlined />}
+              onClick={toggleHideOldEvents}
+              icon={isOldEventsHidden ? <EyeInvisibleOutlined /> : <EyeOutlined />}
             />
           </Tooltip>
         </Col>
