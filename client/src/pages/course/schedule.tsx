@@ -1,4 +1,5 @@
-import { Col, Row, Select } from 'antd';
+import { Col, Row, Select, Tooltip, Button } from 'antd';
+import { EyeOutlined, EyeInvisibleOutlined } from '@ant-design/icons';
 import { withSession, PageLayout } from 'components';
 import { TableView, CalendarView, ListView } from 'components/Schedule';
 import withCourseData from 'components/withCourseData';
@@ -11,10 +12,11 @@ import { useLoading } from 'components/useLoading';
 import { isMobileOnly } from 'mobile-device-detect';
 import { ViewMode } from 'components/Schedule/model';
 import UserSettings from '../../components/UserSettings/UserSettings';
-
+import moment from 'moment-timezone';
 
 const { Option } = Select;
 const LOCAL_VIEW_MODE = 'scheduleViewMode';
+const LOCAL_HIDE_OLD_EVENTS = 'scheduleHideOldEvents';
 
 const TaskTypes = {
   deadline: 'deadline',
@@ -28,7 +30,13 @@ export function SchedulePage(props: CoursePageProps) {
   const [data, setData] = useState<CourseEvent[]>([]);
   const [timeZone, setTimeZone] = useState(Intl.DateTimeFormat().resolvedOptions().timeZone);
   const [scheduleViewMode, setScheduleViewMode] = useLocalStorage<string>(LOCAL_VIEW_MODE, getDefaultViewMode());
+  const [isOldEventsHidden, setOldEventsHidden] = useLocalStorage<boolean>(LOCAL_HIDE_OLD_EVENTS, false);
   const courseService = useMemo(() => new CourseService(props.course.id), [props.course.id]);
+  const relevantEvents = useMemo(() => {
+    const yesterday = moment.utc().subtract(1, 'day');
+
+    return data.filter(({ dateTime }) => moment(dateTime).isAfter(yesterday, 'day'));
+  }, [data]);
 
   const loadData = async () => {
     const [events, tasks] = await Promise.all([courseService.getCourseEvents(), courseService.getCourseTasksDetails()]);
@@ -46,6 +54,11 @@ export function SchedulePage(props: CoursePageProps) {
 
   const viewMode = scheduleViewMode as ViewMode;
   const ScheduleView = mapScheduleViewToComponent[viewMode] || TableView;
+  const filteredData = isOldEventsHidden ? relevantEvents : data;
+
+  const toggleOldEvents = () => {
+    setOldEventsHidden(!isOldEventsHidden);
+  };
 
   return (
     <PageLayout loading={loading} title="Schedule" githubId={props.session.githubId}>
@@ -72,11 +85,20 @@ export function SchedulePage(props: CoursePageProps) {
           </Select>
         </Col>
         <Col>
+          <Tooltip title="Hide old events" mouseEnterDelay={1}>
+            <Button
+              type="primary"
+              onClick={toggleOldEvents}
+              icon={isOldEventsHidden ? <EyeInvisibleOutlined /> : <EyeOutlined />}
+            />
+          </Tooltip>
+        </Col>
+        <Col>
           <UserSettings />
         </Col>
       </Row>
       <ScheduleView
-        data={data}
+        data={filteredData}
         timeZone={timeZone}
         isAdmin={props.session.isAdmin}
         courseId={props.course.id}
