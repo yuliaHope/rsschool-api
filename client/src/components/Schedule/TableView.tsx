@@ -12,11 +12,10 @@ import {
   dateWithTimeZoneRenderer,
   urlRenderer,
   placeRenderer,
-  renderTag,
+  renderTagWithStyle,
 } from 'components/Table';
 import { CourseEvent, CourseService } from 'services/course';
 import { ScheduleRow, TaskTypes } from './model';
-import { EventTypeColor, EventTypeToName } from 'components/Schedule/model';
 import EditableCell from './EditableCell';
 
 const { Text } = Typography;
@@ -27,9 +26,10 @@ type Props = {
   isAdmin: boolean;
   courseId: number;
   refreshData: Function;
+  storedTagColors: object;
 };
 
-const getColumns = (timeZone: string) => [
+const getColumns = (timeZone: string, storedTagColors: object) => [
   {
     title: <SettingOutlined />,
     width: 20,
@@ -57,7 +57,7 @@ const getColumns = (timeZone: string) => [
     title: 'Type',
     width: 120,
     dataIndex: ['event', 'type'],
-    render: (value: keyof typeof EventTypeColor) => renderTag(EventTypeToName[value] || value, EventTypeColor[value]),
+    render: (tagName: string) => renderTagWithStyle(tagName, storedTagColors),
     editable: true,
   },
   {
@@ -108,7 +108,7 @@ const getColumns = (timeZone: string) => [
   },
 ];
 
-export function TableView({ data, timeZone, isAdmin, courseId, refreshData }: Props) {
+export function TableView({ data, timeZone, isAdmin, courseId, refreshData, storedTagColors }: Props) {
   const [form] = Form.useForm();
   const [editingKey, setEditingKey] = useState('');
   const courseService = useMemo(() => new CourseService(courseId), [courseId]);
@@ -217,7 +217,7 @@ export function TableView({ data, timeZone, isAdmin, courseId, refreshData }: Pr
     ];
   };
 
-  const columns = [...getColumns(timeZone), ...getAdminColumn(isAdmin)] as ColumnsType<CourseEvent>;
+  const columns = [...getColumns(timeZone, storedTagColors), ...getAdminColumn(isAdmin)] as ColumnsType<CourseEvent>;
 
   const mergedColumns = columns.map((col: any) => {
     if (!col.editable) {
