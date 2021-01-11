@@ -121,9 +121,9 @@ const getColumns = (timeZone: string, hiddenColumn:Set<string>, setHiddenColumn:
 export function TableView({ data, timeZone, isAdmin, courseId, refreshData }: Props) {
   const [form] = Form.useForm();
   const [editingKey, setEditingKey] = useState('');
-  const courseService = useMemo(() => new CourseService(courseId), [courseId]);
   const [hiddenColumn, setHiddenColumn] = useState<Set<string>>(new Set);
-
+  const courseService = useMemo(() => new CourseService(courseId), [courseId]);
+  
   const isEditing = (record: CourseEvent) => record.id.toString() === editingKey;
 
   const edit = (record: CourseEvent) => {
@@ -227,7 +227,7 @@ export function TableView({ data, timeZone, isAdmin, courseId, refreshData }: Pr
       },
     ];
   };
-
+  // const listTasks = data.filter((element) => element?.type && !hiddenColumn.has(element.type.toString()));
   const sortedColumns = getColumns(timeZone, hiddenColumn, setHiddenColumn).filter((element) => element?.title && !hiddenColumn.has(element.title.toString()));
   const columns = [...sortedColumns, ...getAdminColumn(isAdmin)] as ColumnsType<CourseEvent>;
 
