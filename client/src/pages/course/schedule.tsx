@@ -11,7 +11,8 @@ import { useAsync, useLocalStorage } from 'react-use';
 import { useLoading } from 'components/useLoading';
 import { isMobileOnly } from 'mobile-device-detect';
 import { ViewMode } from 'components/Schedule/model';
-import UserSettings from '../../components/UserSettings/UserSettings';
+import UserSettings from 'components/UserSettings/UserSettings';
+import { DEFAULT_COLOR } from 'components/UserSettings/userSettingsHandlers';
 import moment from 'moment-timezone';
 
 const { Option } = Select;
@@ -28,8 +29,10 @@ const TaskTypes = {
 export function SchedulePage(props: CoursePageProps) {
   const [loading, withLoading] = useLoading(false);
   const [data, setData] = useState<CourseEvent[]>([]);
+  const [tags, setTags] = useState<string[]>([]);
   const [timeZone, setTimeZone] = useState(Intl.DateTimeFormat().resolvedOptions().timeZone);
   const [scheduleViewMode, setScheduleViewMode] = useLocalStorage<string>(LOCAL_VIEW_MODE, getDefaultViewMode());
+  const [storedTagColors, setStoredTagColors] = useLocalStorage<object>('tagColors', DEFAULT_COLOR);
   const [isOldEventsHidden, setOldEventsHidden] = useLocalStorage<boolean>(LOCAL_HIDE_OLD_EVENTS, false);
   const courseService = useMemo(() => new CourseService(props.course.id), [props.course.id]);
   const relevantEvents = useMemo(() => {
@@ -42,6 +45,9 @@ export function SchedulePage(props: CoursePageProps) {
     const [events, tasks] = await Promise.all([courseService.getCourseEvents(), courseService.getCourseTasksDetails()]);
     const data = events.concat(tasksToEvents(tasks)).sort((a, b) => a.dateTime.localeCompare(b.dateTime));
     setData(data);
+
+    const distinctTags = Array.from(new Set(data.map(element => element.event.type)));
+    setTags(distinctTags);
   };
 
   useAsync(withLoading(loadData), [courseService]);
@@ -94,7 +100,11 @@ export function SchedulePage(props: CoursePageProps) {
           </Tooltip>
         </Col>
         <Col>
-          <UserSettings />
+          <UserSettings
+            tags={tags}
+            setStoredTagColors={setStoredTagColors}
+            storedTagColors={storedTagColors || {}}
+          />
         </Col>
       </Row>
       <ScheduleView
@@ -103,6 +113,7 @@ export function SchedulePage(props: CoursePageProps) {
         isAdmin={props.session.isAdmin}
         courseId={props.course.id}
         refreshData={loadData}
+        storedTagColors={storedTagColors || {}}
       />
     </PageLayout>
   );

@@ -2,40 +2,44 @@ import React, { useCallback } from 'react';
 import TagColorIcon from './TagColorIcon';
 import { Collapse, Tag } from 'antd';
 import { GithubPicker } from 'react-color';
-import { pickerColors, mockedTags as tags, setTagColor, getTagStyle, DEFAULT_COLOR } from './userSettingsHandlers';
-import { useLocalStorage } from 'react-use';
+import { pickerColors, setTagColor, getTagStyle } from './userSettingsHandlers';
 import { ColorState as IColorState } from 'react-color';
 
-const TagColor: React.FC = () => {
+type Props = {
+  tags: string[];
+  storedTagColors: object;
+  setStoredTagColors: (value: object) => void;
+};
+
+const TagColor: React.FC<Props> = ({ storedTagColors, setStoredTagColors, tags }) => {
   const { Panel } = Collapse;
-  const [storedTagColors, setStoredTagColors] = useLocalStorage<object>('tagColors', DEFAULT_COLOR);
 
   const memoizedSetTagColor = useCallback(
-    (e: IColorState, itemName, storedTagColors) => {
-      setTagColor(e, itemName, setStoredTagColors, storedTagColors);
+    (e: IColorState, tagName, storedTagColors) => {
+      setTagColor(e, tagName, setStoredTagColors, storedTagColors);
     },
     [storedTagColors],
   );
 
   const collapseTags = (
     <Collapse accordion ghost>
-      {tags.map((item) => {
+      {tags.map((tag) => {
         return (
           <Panel
             header={
               <Tag
-                style={getTagStyle(item.name, storedTagColors, { cursor: 'pointer' })}
+                style={getTagStyle(tag, storedTagColors, { cursor: 'pointer' })}
               >
-                {item.name}
+                {tag}
               </Tag>
             }
-            key={item.name}
+            key={tag}
           >
             <GithubPicker
               colors={pickerColors}
               triangle="hide"
               width={'138px'}
-              onChange={(e) => memoizedSetTagColor(e, item.name, storedTagColors)}
+              onChange={(e) => memoizedSetTagColor(e, tag, storedTagColors)}
             />
           </Panel>
         );

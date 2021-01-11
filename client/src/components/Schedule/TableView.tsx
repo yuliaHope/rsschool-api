@@ -12,11 +12,10 @@ import {
   dateWithTimeZoneRenderer,
   urlRenderer,
   placeRenderer,
-  renderTag,
+  renderTagWithStyle,
 } from 'components/Table';
 import { CourseEvent, CourseService } from 'services/course';
 import { ScheduleRow, TaskTypes } from './model';
-import { EventTypeColor, EventTypeToName } from 'components/Schedule/model';
 import EditableCell from './EditableCell';
 import FilterComponent from '../Table/FilterComponent';
 
@@ -28,6 +27,7 @@ type Props = {
   isAdmin: boolean;
   courseId: number;
   refreshData: Function;
+  storedTagColors: object;
 };
 
 const styles  = {
@@ -37,9 +37,12 @@ const styles  = {
   padding: '15px',
 }
 
-const getColumns = (timeZone: string, hiddenColumn:Set<string>, setHiddenColumn: any) => [
+const getColumns = (timeZone: string, hiddenColumnsRows:Set<string>, sethiddenColumnsRows: Function, storedTagColors: object, distinctTags: Array<string>) => [
   {
-    title:<Dropdown overlayStyle={styles} overlay={() => <FilterComponent setHiddenColumn={setHiddenColumn} hiddenColumn={hiddenColumn}/>} placement="bottomRight" trigger={['click']}>
+    title:<Dropdown overlayStyle={styles} 
+    overlay={() => <FilterComponent eventTypes={distinctTags} sethiddenColumnsRows={sethiddenColumnsRows} hiddenColumnsRows={hiddenColumnsRows}/>} 
+    placement="bottomRight" 
+    trigger={['click']}>
         <SettingOutlined />
       </Dropdown>,
     width: 20,
@@ -67,7 +70,7 @@ const getColumns = (timeZone: string, hiddenColumn:Set<string>, setHiddenColumn:
     title: 'Type',
     width: 120,
     dataIndex: ['event', 'type'],
-    render: (value: keyof typeof EventTypeColor) => renderTag(EventTypeToName[value] || value, EventTypeColor[value]),
+    render: (tagName: string) => renderTagWithStyle(tagName, storedTagColors),
     editable: true,
   },
   {
@@ -118,11 +121,12 @@ const getColumns = (timeZone: string, hiddenColumn:Set<string>, setHiddenColumn:
   },
 ];
 
-export function TableView({ data, timeZone, isAdmin, courseId, refreshData }: Props) {
+export function TableView({ data, timeZone, isAdmin, courseId, refreshData, storedTagColors }: Props) {
   const [form] = Form.useForm();
   const [editingKey, setEditingKey] = useState('');
-  const [hiddenColumn, setHiddenColumn] = useState<Set<string>>(new Set);
+  const [hiddenColumnsRows, setHiddenColumnsRows] = useState<Set<string>>(new Set);
   const courseService = useMemo(() => new CourseService(courseId), [courseId]);
+  const distinctTags = Array.from(new Set(data.map(element => element.event.type)));
   
   const isEditing = (record: CourseEvent) => record.id.toString() === editingKey;
 
@@ -227,8 +231,9 @@ export function TableView({ data, timeZone, isAdmin, courseId, refreshData }: Pr
       },
     ];
   };
-  // const listTasks = data.filter((element) => element?.type && !hiddenColumn.has(element.type.toString()));
-  const sortedColumns = getColumns(timeZone, hiddenColumn, setHiddenColumn).filter((element) => element?.title && !hiddenColumn.has(element.title.toString()));
+
+  const listTasks = data.filter((element) => element?.event.type && !hiddenColumnsRows.has(element.event.type.toString()));
+  const sortedColumns = getColumns(timeZone, hiddenColumnsRows, setHiddenColumnsRows, storedTagColors, distinctTags).filter((element) => element?.title && !hiddenColumnsRows.has(element.title.toString()));
   const columns = [...sortedColumns, ...getAdminColumn(isAdmin)] as ColumnsType<CourseEvent>;
 
   const mergedColumns = columns.map((col: any) => {
@@ -256,7 +261,7 @@ export function TableView({ data, timeZone, isAdmin, courseId, refreshData }: Pr
         }}
         rowKey={record => (record.event.type === TaskTypes.deadline ? `${record.id}d` : record.id).toString()}
         pagination={false}
-        dataSource={data}
+        dataSource={listTasks}
         size="middle"
         columns={mergedColumns}
         rowClassName="editable-row"
