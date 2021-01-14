@@ -37,10 +37,10 @@ const styles  = {
   padding: '15px',
 }
 
-const getColumns = (timeZone: string, hiddenColumnsRows:Set<string>, sethiddenColumnsRows: Function, storedTagColors: object, distinctTags: Array<string>) => [
+const getColumns = (timeZone: string, hiddenColumnsRows:Set<string>, setHiddenColumnsRows: Function, storedTagColors: object, distinctTags: Array<string>) => [
   {
     title:<Dropdown overlayStyle={styles} 
-    overlay={() => <FilterComponent eventTypes={distinctTags} sethiddenColumnsRows={sethiddenColumnsRows} hiddenColumnsRows={hiddenColumnsRows}/>} 
+    overlay={() => <FilterComponent eventTypes={distinctTags} setHiddenColumnsRows={setHiddenColumnsRows} hiddenColumnsRows={hiddenColumnsRows}/>} 
     placement="bottomRight" 
     trigger={['click']}>
         <SettingOutlined />

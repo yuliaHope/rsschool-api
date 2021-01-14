@@ -1,10 +1,16 @@
 import React from 'react';
 import { Space, Checkbox } from 'antd';
 
-const FilterComponent: React.FC<any> = ({setHiddenColumnsRows,  hiddenColumnsRows, eventTypes}) => {
+type Props = {
+  setHiddenColumnsRows: Function,
+  hiddenColumnsRows: Set<string>,
+  eventTypes: Array<string>,
+}
+
+const FilterComponent: React.FC<any> = ({ setHiddenColumnsRows,  hiddenColumnsRows, eventTypes }: Props) => {
     const columnsName: Array<string> = ['Type', 'Special', 'Url', 'Organizer', 'Place'];
     
-    const handledFilter = (event: any): void => {
+    const handledFilter = (event: any) => {
         const {value} = event.target;
         const {checked} = event.target;
         if (checked && hiddenColumnsRows.has(value)) {
@@ -23,9 +29,9 @@ const FilterComponent: React.FC<any> = ({setHiddenColumnsRows,  hiddenColumnsRow
     };
       
     return (
-      <Space>
-        <Space direction="vertical" >
-            <strong>Columns</strong>
+      <Space style={{alignItems: 'flex-start'}}>
+        <Space direction="vertical">
+          <span style={{fontWeight: 'bold'}}>Events</span>
             {
                 columnsName.map((el, ind) => {
                     return <Checkbox key={`${ind}_${el}`} value={el} checked={!hiddenColumnsRows.has(el)} onChange={handledFilter}>{el}</Checkbox>;
@@ -35,12 +41,12 @@ const FilterComponent: React.FC<any> = ({setHiddenColumnsRows,  hiddenColumnsRow
         {
           eventTypes.length !== 0 
           ? (<Space direction="vertical">
-            <strong>Events</strong>
-            {
-                eventTypes.map((el, ind) => {
-                    return <Checkbox key={`${ind}_${el}`} value={el} checked={!hiddenColumnsRows.has(el)} onChange={handledFilter}>{el}</Checkbox>;
-                })
-            } 
+              <span style={{fontWeight: 'bold'}}>Columns</span>
+              {
+                  eventTypes.map((el, ind) => {
+                      return <Checkbox key={`${ind}_${el}`} value={el} checked={!hiddenColumnsRows.has(el)} onChange={handledFilter}>{el}</Checkbox>;
+                  })
+              } 
           </Space>)
           : null
         }
