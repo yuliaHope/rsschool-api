@@ -4,7 +4,6 @@ import { Popconfirm, Table, Typography, Space, Form, Button, message } from 'ant
 import { ColumnsType } from 'antd/lib/table';
 import moment from 'moment-timezone';
 import mergeWith from 'lodash/mergeWith';
-import Link from 'next/link';
 import { GithubUserLink } from 'components';
 import {
   dateSorter,
@@ -18,6 +17,8 @@ import {
 import { CourseEvent, CourseService } from 'services/course';
 import { ScheduleRow, TaskTypes } from './model';
 import EditableCell from './EditableCell';
+import Link from 'next/link';
+
 
 const { Text } = Typography;
 
@@ -74,10 +75,17 @@ const getColumns = (timeZone: string, storedTagColors: object, alias: string) =>
     width: 150,
     dataIndex: ['event', 'name'],
     render: (value: string, row: any) => {
-      if (row.isTask) {
-        return <Link href={`/course/task/[taskDetails]?course=${alias}`} as={`/course/task/${row.id}?course=${alias}`}><a><Text style={{ width: '100%', height: '100%', display: 'block' }} strong>{value}</Text></a></Link>;
-      }
-      return <Link href={`/course/event/[eventDetails]?course=${alias}`} as={`/course/event/${row.id}?course=${alias}`}><a><Text style={{ width: '100%', height: '100%', display: 'block' }} strong>{value}</Text></a></Link>;
+      return (
+        <Link 
+          href={`/course/entityDetails?course=${alias}&entityType=${row.isTask ? 'task' : 'event'}&entityId=${row.id}`} 
+        >
+          <a>
+            <Text style={{ width: '100%', height: '100%', display: 'block' }} strong>
+              {value}
+            </Text>
+          </a>
+        </Link>
+      );
     },
     ...getColumnSearchProps('event.name'),
     editable: true,
