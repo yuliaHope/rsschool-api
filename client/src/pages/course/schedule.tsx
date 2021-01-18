@@ -3,7 +3,7 @@ import { EyeOutlined, EyeInvisibleOutlined } from '@ant-design/icons';
 import { withSession, PageLayout } from 'components';
 import { TableView, CalendarView, ListView } from 'components/Schedule';
 import withCourseData from 'components/withCourseData';
-import { useState, useMemo } from 'react';
+import React, { useState, useMemo } from 'react';
 import { CourseEvent, CourseService, CourseTaskDetails } from 'services/course';
 import { CoursePageProps } from 'services/models';
 import { TIMEZONES } from '../../configs/timezones';
@@ -14,6 +14,8 @@ import { ViewMode } from 'components/Schedule/model';
 import UserSettings from 'components/UserSettings/UserSettings';
 import { DEFAULT_COLOR } from 'components/UserSettings/userSettingsHandlers';
 import moment from 'moment-timezone';
+
+import ModalWindowForForm from '../../components/Forms/ModalFormAddTask';
 
 const { Option } = Select;
 const LOCAL_VIEW_MODE = 'scheduleViewMode';
@@ -40,6 +42,12 @@ export function SchedulePage(props: CoursePageProps) {
 
     return data.filter(({ dateTime }) => moment(dateTime).isAfter(yesterday, 'day'));
   }, [data]);
+
+  const [visible, setVisible] = useState(false);
+
+  const handleCancel = () => {
+    setVisible(false);
+  };
 
   const loadData = async () => {
     const [events, tasks] = await Promise.all([courseService.getCourseEvents(), courseService.getCourseTasksDetails()]);
@@ -105,6 +113,18 @@ export function SchedulePage(props: CoursePageProps) {
             setStoredTagColors={setStoredTagColors}
             storedTagColors={storedTagColors || {}}
           />
+        </Col>
+        <Col>
+          <Button
+            onClick={() => {
+              setVisible(true);
+            }}
+            // style={{ margin: '0 10px 10px 0' }}
+            // className={props.userPreferences.readable ? 'readable-bold-1' : ''}
+          >
+            <p>Add new task</p>
+          </Button>
+          {visible && <ModalWindowForForm visible={visible} handleCancel={handleCancel} course={props.course}/>}
         </Col>
       </Row>
       <ScheduleView
