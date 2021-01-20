@@ -114,6 +114,7 @@ export function SchedulePage(props: CoursePageProps) {
         courseId={props.course.id}
         refreshData={loadData}
         storedTagColors={storedTagColors || {}}
+        alias={props.course.alias}
       />
     </PageLayout>
   );
@@ -141,6 +142,7 @@ const createCourseEventFromTask = (task: CourseTaskDetails, type: string): Cours
     organizer: {
       githubId: task.taskOwner ? task.taskOwner.githubId : '',
     },
+    isTask: true,
   } as CourseEvent;
 };
 
