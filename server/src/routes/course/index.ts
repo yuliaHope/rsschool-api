@@ -37,13 +37,13 @@ import {
 } from './students';
 import { postTaskArtefact } from './taskArtefact';
 import { createTaskVerification } from './taskVerification';
-import { getCourseEvents, getCourseEventsCalendar } from './events';
+import { getCourseEvent, getCourseEvents, getCourseEventsCalendar } from './events';
 import { getStudentTaskVerifications, getCourseTasksVerifications } from './taskVerifications';
 import * as stageInterview from './stageInterview';
 
 import * as interviews from './interviews';
 
-import { getCourseTasksDetails, createCourseTaskDistribution, getCourseTasks } from './tasks';
+import { getCourseTasksDetails, createCourseTaskDistribution, getCourseTasks, getCourseTask } from './tasks';
 import {
   createRepository,
   createRepositories,
@@ -114,6 +114,7 @@ function addStageApi(router: Router<any, any>, logger: ILogger) {
 }
 
 function addEventApi(router: Router<any, any>, logger: ILogger) {
+  router.get('/event/:id', courseGuard, getCourseEvent(logger));
   router.put('/event/:id', courseManagerGuard, createPutRoute(CourseEvent, logger));
   router.post('/event', courseManagerGuard, createPostRoute(CourseEvent, logger));
   router.delete('/event/:id', courseManagerGuard, createDeleteRoute(CourseEvent, logger));
@@ -123,6 +124,7 @@ function addEventApi(router: Router<any, any>, logger: ILogger) {
 }
 
 function addTaskApi(router: Router<any, any>, logger: ILogger) {
+  router.get('/task/:id', courseGuard, getCourseTask(logger));
   router.post('/task', courseManagerGuard, createPostRoute(CourseTask, logger));
   router.put('/task/:id', courseManagerGuard, createPutRoute(CourseTask, logger));
   router.delete('/task/:id', courseManagerGuard, createDisableRoute(CourseTask, logger));
