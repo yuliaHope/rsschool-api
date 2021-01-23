@@ -27,6 +27,8 @@ export interface CourseTask {
   checker: 'auto-test' | 'mentor' | 'assigned' | 'taskOwner' | 'crossCheck' | 'jury';
   taskOwnerId: number | null;
   publicAttributes?: SelfEducationPublicAttributes;
+  special?: string;
+  duration?: number;
 }
 
 export interface SelfEducationPublicAttributes {
@@ -140,7 +142,7 @@ export class CourseService {
     return result.data.data.sort(sortTasksByEndDate);
   }
 
-  async getEventById(id:string) {
+  async getEventById(id: string) {
     const result = await this.axios.get<{ data: CourseEvent }>(`/event/${id}`);
     return result.data.data;
   }
