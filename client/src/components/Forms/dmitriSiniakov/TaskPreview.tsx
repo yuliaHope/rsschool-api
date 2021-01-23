@@ -8,7 +8,15 @@ import moment from 'moment';
 
 const { Meta } = Card;
 
-const TaskPreview: React.FC = ({ addingItem, tag, darkTheme, activeMarker, userPreferences }: any) => {
+interface Props {
+  addingItem: any,
+  tag: any,
+  darkTheme: any,
+  activeMarker?: any,
+  userPreferences?: any
+}
+
+const TaskPreview: React.FC<Props> = ({ addingItem, tag, darkTheme, activeMarker, userPreferences }) => {
   const owlsImage = 'https://res.cloudinary.com/dv4fxot90/image/upload/v1601110530/schedule/owls_big_xkdavi.png';
   const slothImage = 'https://res.cloudinary.com/dv4fxot90/image/upload/v1601109894/schedule/sloth_big_jsio5q.png';
   const owlsAvatar = 'https://res.cloudinary.com/dv4fxot90/image/upload/v1601110529/schedule/owls_ava_emxxwe.png';
@@ -113,6 +121,11 @@ const TaskPreview: React.FC = ({ addingItem, tag, darkTheme, activeMarker, userP
   if (!addingItem) {
     return <Empty>No data for preview, please, fill the form</Empty>;
   }
+
+  return (
+    <>
+    </>
+  )
 };
 
 export default TaskPreview;

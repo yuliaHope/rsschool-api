@@ -1,22 +1,18 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useCallback } from 'react';
 import { Form, Input, InputNumber, Button, Upload, DatePicker, Select, Spin, Alert, Switch, Drawer } from 'antd';
-// import { Task, TaskService } from 'services/task';
+import { Task, TaskService } from 'services/task';
 import { CourseService, CourseTaskDetails } from 'services/course';
+import { useAsync } from 'react-use';
 import { withSession } from 'components';
-// import withCourseData from 'components/withCourseData';
 import { Course } from '../../services/models';
-
+import { UserSearch } from 'components/UserSearch';
+import { UserService } from 'services/user';
 import { UploadOutlined } from '@ant-design/icons';
 // import MapComponent from '../../TaskPageDrawer/Map';
-// import DynamicFieldSet from '../DynamicLinksField';
-// import { layout, validateMessages, normFile, initialTags, timeZoneListAdd } from './utilsForForms';
-// import moment from 'moment';
-import 'moment-timezone';
-
-import { SPECIAL_EVENT_TAGS } from 'components/Schedule/model';
+import { formatTimezoneToUTC } from 'services/formatter';
 import { TIMEZONES } from '../../configs/timezones';
 import DynamicFieldSet from './dmitriSiniakov/DynamicLinksField'
-// import TagColor from '../UserSettings/TagColor';
+import 'moment-timezone';
 
 const { Option } = Select;
 const { TextArea } = Input;
@@ -50,8 +46,6 @@ type Props = {
   handleChangeLinks: any,
   onFieldsChange: any,
   onSelectChange: any,
-  tag: any,
-  // darkTheme,
   // onMapClicked,
   activeMarker: any,
   loading: any,
@@ -67,104 +61,67 @@ const FormAddTask: React.FC<Props> = (props) => {
     handleCancel,
     handleChangeLinks,
     onFieldsChange,
-    // onSelectChange,
-    // tag,
-    // darkTheme,
     // onMapClicked,
     // activeMarker,
-    loading,
+    // loading,
     error,
-    // storedTagColors, // it doesnt work
-    // setStoredTagColors, // it doesn't work
     course,
   } = props;
-  console.log(course);
   const courseId = course.id;
   const service = useMemo(() => new CourseService(courseId), [courseId]);
 
   const [isMapShown, setMapShown] = useState(false);
-  const [addTagMode, setAddTagMode] = useState(false);
-  const [allowFeedback, setAllowFeedback] = useState(true);
-  const [tags, setTags] = useState(SPECIAL_EVENT_TAGS);
+  const [allowFeedback, setAllowFeedback] = useState(false);
   const [isSuccess, setSuccess] = useState(false);
-  // const [currentTimeZone, setCurrentTimeZone] = useState('Europe/Minsk');
-  const [timeZone, setTimeZone] = useState(Intl.DateTimeFormat().resolvedOptions().timeZone);
+  const userService = new UserService();
+  const [loading, setLoading] = useState(false);
+  const [data, setData] = useState([] as CourseTaskDetails[]);
+  const [tasks, setTasks] = useState([] as Task[]);
+  const [modalData, setModalData] = useState(null as Partial<CourseTaskDetails> | null);
+  const loadData = useCallback(async () => {
+    setLoading(true);
+    const [data, tasks] = await Promise.all([service.getCourseTasksDetails(), new TaskService().getTasks()]);
+    setData(data);
+    setTasks(tasks);
+    setLoading(false);
+  }, [courseId]);
 
-  // const tagOptionsList = tags.map((option: string) => {
-  //   return (
-  //     <Option value={option} key={option}>
-  //       {option}
-  //     </Option>
-  //   );
-  // });
+  useAsync(loadData, [courseId]);
 
-  const timeZoneOptionsList = TIMEZONES.map(tz => (
-    <Option key={tz} value={tz}>
-      {tz}
-    </Option>
-  ));
-
-  const OnTimeZoneChange = (e: string) => {
-    setTimeZone(e);
+  const loadUsers = async (searchText: string) => {
+    return userService.searchUser(searchText);
   };
 
   const showMap = () => {
     setMapShown(!isMapShown);
   };
 
-  const toggleAddTagMode = (flag: boolean, value?: string) => {
-    if (value) {
-      const newTagsList = [...tags];
-      newTagsList.push(value);
-      setTags(newTagsList);
-    }
-    setAddTagMode(flag);
-  };
-
   const onSwitchChange = async (checked: boolean) => {
     setAllowFeedback(checked);
   };
 
-  const onFinish = (values: any) => { 
-    // const valuesTest = {
-    //   checker: "mentor",
-    //   courseId: 13,
-    //   maxScore: 100,
-    //   pairsCount: undefined,
-    //   scoreWeight: 1,
-    //   stageId: undefined,
-    //   studentEndDate: "2021-01-23 19:27+00:00",
-    //   studentStartDate: "2021-01-15 19:21+00:00",
-    //   taskId: 526,
-    //   taskOwnerId: undefined,
-    //   type: undefined,
-    //   name: 'vasya'
-    // };
-
-    // values = {
-    //   ...values,
-    //   author: values.author ? values.author : 'admin',
-    //   tag: tag,
-    //   date: moment(values.date).tz(timeZone).format(),
-    //   deadline: moment(values.deadline).tz(timeZone).format(),
-    //   links: values.links ? values.links : ['https://www.google.com/'],
-    //   photo: values.photo ? true : null,
-    //   video: values.video ? true : null,
-    //   map: activeMarker,
-    //   allowFeedback: allowFeedback,
-    //   courseId: course.id,
-    // };
-
-    const record = createRecord(values, course.id);
-    // interface values: Task + ?courseId
+  const handleModalSubmit = (values: any) => { 
+    console.log('before -- ', values);
+    const [startDate, endDate] = values.range || [null, null];
+    values = {
+      ...values,
+      courseId: course.id,
+      author: values.author ? values.author : 'admin',
+      // map: activeMarker,
+      studentStartDate: startDate ? formatTimezoneToUTC(startDate, values.timeZone) : null,
+      studentEndDate: endDate ? formatTimezoneToUTC(endDate, values.timeZone) : null,
+      descriptionUrl: values.links ? values.links : ['https://www.google.com/'],
+      photo: values.photo ? true : null,
+      video: values.video ? true : null,
+      allowFeedback: allowFeedback,
+      
+    };
 
     if (!error) {
       setSuccess(true);
     }
-
-    console.log(record);
-
-    service.createCourseTask(record);
+    console.log('after -- ', values);
+    service.createCourseTask(values);
   };
 
   if (loading) {
@@ -183,69 +140,36 @@ const FormAddTask: React.FC<Props> = (props) => {
         className="form-add-wrapper"
         {...layout}
         name="nest-messages"
-        onFinish={onFinish}
+        onFinish={handleModalSubmit}
         validateMessages={validateMessages}
         initialValues={{
           tag: 'self education',
         }}
         onFieldsChange={onFieldsChange}
       >
-        <Form.Item name="name" label="Name" rules={[{ required: true }]}>
-          <Input />
+        <Form.Item name="taskId" label="Task" rules={[{ required: true, message: 'Please select a task' }]}>
+          <Select showSearch placeholder="Please select a task">
+            {tasks.map((task: Task) => (
+              <Option key={task.id} value={task.id}>
+                {task.name}
+              </Option>
+            ))}
+          </Select>
         </Form.Item>
-        <Form.Item name="author" label="Author" rules={[{ required: true }]}>
-          <Input />
+        <Form.Item
+          name="taskOwnerId"
+          label="Task Owner"
+          rules={[{ required: false, message: 'Please select a task owner' }]}
+        >
+          <UserSearch defaultValues={modalData?.taskOwner ? [modalData.taskOwner] : []} searchFn={loadUsers} />
         </Form.Item>
-        {/* <Form.Item name="tag" label="Tag">
-          <Input.Group compact>
-            <Select
-              style={{ width: '30%' }}
-              defaultValue={'self education'}
-              onChange={(e) => {
-                onSelectChange(e);
-              }}
-            >
-              {tagOptionsList}
-            </Select>
-            {!addTagMode && (
-              <Button
-                style={{ width: '40%' }}
-                type="default"
-                onClick={() => {
-                  toggleAddTagMode(true);
-                }}
-              >
-                Add own tag
-              </Button>
-            )}
-            {addTagMode && (
-              <Input
-                name="owntag"
-                style={{ width: '30%' }}
-                autoFocus={true}
-                onBlur={(e) => {
-                  toggleAddTagMode(false, e.target.value);
-                }}
-              />
-            )}
-          </Input.Group>
-        </Form.Item> */}
-        {/* <Form.Item label="Tag color">
-          <TagColor 
-            tags={tags} 
-            setStoredTagColors={setStoredTagColors} 
-            storedTagColors={storedTagColors}
-          />
-        </Form.Item> */}
-        <Form.Item label="Time Zone">
-          <Select
-            style={{ width: '50%' }}
-            defaultValue={'Europe/Minsk'}
-            onChange={(e) => {
-              OnTimeZoneChange(e);
-            }}
-          >
-            {timeZoneOptionsList}
+        <Form.Item name="timeZone" label="TimeZone">
+          <Select placeholder="Please select a timezone">
+            {TIMEZONES.map(tz => (
+              <Option key={tz} value={tz}>
+                {tz}
+              </Option>
+            ))}
           </Select>
         </Form.Item>
         <Form.Item
@@ -255,16 +179,6 @@ const FormAddTask: React.FC<Props> = (props) => {
         >
           <DatePicker.RangePicker format="YYYY-MM-DD HH:mm" showTime={{ format: 'HH:mm' }} />
         </Form.Item>
-        {/* <Form.Item
-          label="Date"
-          name="date"
-          rules={[{ type: 'object', required: true, message: 'Please select date!' }]}
-        >
-          <DatePicker style={{ width: '30%' }} format="YYYY/MM/DD" />
-        </Form.Item>
-        <Form.Item name="deadline" label="Deadline">
-          <DatePicker format="YYYY/MM/DD" />
-        </Form.Item> */}
         <Form.Item name="duration" rules={[{ type: 'number', min: 0 }]} label="Duration">
           <InputNumber min={0} step={0.5} />
         </Form.Item>
@@ -277,7 +191,7 @@ const FormAddTask: React.FC<Props> = (props) => {
         <Form.Item name="remark" label="Remark">
           <Input />
         </Form.Item>
-        <DynamicFieldSet handleChangeLinks={handleChangeLinks} />
+        <DynamicFieldSet handleChangeLinks={handleChangeLinks} />   
         <Form.Item name="map" label="Map">
           <Button type="dashed" block onClick={showMap}>
             Show map
@@ -308,27 +222,11 @@ const FormAddTask: React.FC<Props> = (props) => {
       </Form>
     );
   }
+
+  return (
+    <>
+    </>
+  )
 };
-
-function createRecord(values: any, courseId: number) {
-  // data: Partial<Task>
-  const data = {
-    id: values.id,
-    courseId,
-    type: values.type,
-    name: values.name,
-    verification: values.verification,
-    githubPrRequired: !!values.githubPrRequired,
-    descriptionUrl: values.descriptionUrl,
-    githubRepoName: values.githubRepoName,
-    sourceGithubRepoUrl: values.sourceGithubRepoUrl,
-    tags: values.tags,
-    discipline: values.discipline,
-    attributes: JSON.parse(values.attributes ?? '{}'),
-
-    taskId: 515,  //test
-  };
-  return data;
-}
 
 export default withSession(FormAddTask);

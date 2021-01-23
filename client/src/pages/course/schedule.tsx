@@ -116,6 +116,7 @@ export function SchedulePage(props: CoursePageProps) {
         </Col>
         <Col>
           <Button
+            type="primary"
             onClick={() => {
               setVisible(true);
             }}

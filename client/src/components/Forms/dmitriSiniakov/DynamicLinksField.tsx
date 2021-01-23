@@ -2,15 +2,19 @@ import React from 'react';
 import { Form, Input, Button } from 'antd';
 import { MinusCircleOutlined, PlusOutlined } from '@ant-design/icons';
 
-const DynamicFieldSet: React.FC = ({ handleChangeLinks } : any) => {
+interface Props {
+  handleChangeLinks: () => {}, 
+}
+
+const DynamicFieldSet: React.FC<Props> = ({ handleChangeLinks }) => {
   return (
     <>
       <Form.List name="links">
         {(fields, { add, remove }) => {
           return (
             <div>
-              {fields.map((field) => (
-                <Form.Item label="Link">
+              {fields.map((field, id) => (
+                <Form.Item label="Link" key={id}>
                   <Form.Item  
                     {...field}
                     key={field.key}
