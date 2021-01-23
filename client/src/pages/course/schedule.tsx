@@ -123,11 +123,7 @@ export function SchedulePage(props: CoursePageProps) {
           </Tooltip>
         </Col>
         <Col>
-          <UserSettings
-            tags={tags}
-            setStoredTagColors={setStoredTagColors}
-            storedTagColors={storedTagColors || {}}
-          />
+          <UserSettings tags={tags} setStoredTagColors={setStoredTagColors} storedTagColors={storedTagColors || {}} />
         </Col>
       </Row>
       <ScheduleView
