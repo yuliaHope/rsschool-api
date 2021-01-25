@@ -32,11 +32,11 @@ type Props = {
   isAdmin: boolean;
   courseId: number;
   refreshData: Function;
-  storedTagColors: object;
+  storedTagColors?: object;
   alias: string;
 };
 
-const getColumns = (timeZone: string, storedTagColors: object, alias: string) => [
+const getColumns = (timeZone: string, alias: string, storedTagColors?: object) => [
   {
     title: <SettingOutlined />,
     width: 20,
@@ -242,7 +242,7 @@ export function TableView({ data, timeZone, isAdmin, courseId, refreshData, stor
     ];
   };
 
-  const columns = [...getColumns(timeZone, storedTagColors, alias), ...getAdminColumn(isAdmin)] as ColumnsType<
+  const columns = [...getColumns(timeZone, alias, storedTagColors), ...getAdminColumn(isAdmin)] as ColumnsType<
     CourseEvent
   >;
 
