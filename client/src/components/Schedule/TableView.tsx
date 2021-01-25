@@ -140,7 +140,7 @@ export function TableView({ data, timeZone, isAdmin, courseId, refreshData, stor
       dateTime: moment(record.dateTime),
       time: moment(record.dateTime),
       special: record.special ? record.special.split(',') : [],
-      duration: record.duration ? record.duration : '',
+      duration: record.duration ? Number(record.duration) : null,
     });
     setEditingKey(`${record.id}${record.event.type}`);
   };
@@ -170,10 +170,10 @@ export function TableView({ data, timeZone, isAdmin, courseId, refreshData, stor
 
       try {
         if (isTask) {
-          await taskService.updateTask(editableEntity.id, getNewDataForUpdate(editableEntity) as Partial<Task>);
+          await taskService.updateTask(editableEntity.event.id, getNewDataForUpdate(editableEntity) as Partial<Task>);
           await courseService.updateCourseTask(editableEntity.id, getCourseTaskDataForUpdate(editableEntity));
         } else {
-          await eventService.updateEvent(editableEntity.id, getNewDataForUpdate(editableEntity));
+          await eventService.updateEvent(editableEntity.event.id, getNewDataForUpdate(editableEntity));
           await courseService.updateCourseEvent(editableEntity.id, getCourseEventDataForUpdate(editableEntity));
         }
         await refreshData();
@@ -291,8 +291,10 @@ const getCourseEventDataForUpdate = (entity: CourseEvent) => {
 };
 
 const getCourseTaskDataForUpdate = (entity: CourseEvent) => {
+  const taskDate = entity.event.type !== 'deadline' ? 'studentStartDate' : 'studentEndDate';
+
   const dataForUpdate = {
-    studentEndDate: entity.dateTime,
+    [taskDate]: entity.dateTime,
     taskOwner: { githubId: entity.organizer.githubId },
     special: entity.special,
     duration: entity.duration,
@@ -306,11 +308,16 @@ const getCourseTaskDataForUpdate = (entity: CourseEvent) => {
 };
 
 const getNewDataForUpdate = (entity: CourseEvent) => {
-  return {
+  const dataForUpdate = {
     name: entity.event.name,
-    type: entity.event.type,
     descriptionUrl: entity.event.descriptionUrl,
   };
+
+  if (entity.event.type !== 'deadline') {
+    return { ...dataForUpdate, type: entity.event.type };
+  }
+
+  return dataForUpdate;
 };
 
 export default TableView;

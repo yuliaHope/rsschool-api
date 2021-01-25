@@ -157,6 +157,7 @@ const createCourseEventFromTask = (task: CourseTaskDetails, type: string): Cours
       type: type,
       name: task.name,
       descriptionUrl: task.descriptionUrl,
+      id: task.taskId,
     },
     organizer: {
       githubId: task.taskOwner ? task.taskOwner.githubId : '',
