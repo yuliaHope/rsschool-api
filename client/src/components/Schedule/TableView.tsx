@@ -291,22 +291,18 @@ const getCourseEventDataForUpdate = (entity: CourseEvent) => {
 };
 
 const getCourseTaskDataForUpdate = (entity: CourseEvent) => {
-  if (entity.event.type !== 'deadline') {
-    return {
-      type: entity.event.type,
-      studentStartDate: entity.dateTime,
-      taskOwner: { githubId: entity.organizer.githubId },
-      special: entity.special,
-      duration: entity.duration,
-    };
-  }
-
-  return {
+  const dataForUpdate = {
     studentEndDate: entity.dateTime,
     taskOwner: { githubId: entity.organizer.githubId },
     special: entity.special,
     duration: entity.duration,
   };
+
+  if (entity.event.type !== 'deadline') {
+    return { ...dataForUpdate, type: entity.event.type };
+  }
+
+  return dataForUpdate;
 };
 
 const getNewDataForUpdate = (entity: CourseEvent) => {
