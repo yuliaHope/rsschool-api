@@ -1,5 +1,5 @@
 import { Col, Row, Select, Tooltip, Button } from 'antd';
-import { EyeOutlined, EyeInvisibleOutlined } from '@ant-design/icons';
+import { EyeOutlined, EyeInvisibleOutlined, DownloadOutlined, UploadOutlined } from '@ant-design/icons';
 import { withSession, PageLayout } from 'components';
 import { TableView, CalendarView, ListView } from 'components/Schedule';
 import withCourseData from 'components/withCourseData';
@@ -52,6 +52,7 @@ export function SchedulePage(props: CoursePageProps) {
   const loadData = async () => {
     const [events, tasks] = await Promise.all([courseService.getCourseEvents(), courseService.getCourseTasksDetails()]);
     const data = events.concat(tasksToEvents(tasks)).sort((a, b) => a.dateTime.localeCompare(b.dateTime));
+
     setData(data);
 
     const distinctTags = Array.from(new Set(data.map(element => element.event.type)));
@@ -72,6 +73,14 @@ export function SchedulePage(props: CoursePageProps) {
 
   const toggleOldEvents = () => {
     setOldEventsHidden(!isOldEventsHidden);
+  };
+
+  const exportToCsv = () => {
+    window.location.href = `/api/course/${props.course.id}/schedule/csv`;
+  };
+
+  const importFromCsv = () => {
+    window.location.href = `/api/course/${props.course.id}/schedule/csv`;
   };
 
   return (
@@ -98,6 +107,20 @@ export function SchedulePage(props: CoursePageProps) {
             ))}
           </Select>
         </Col>
+        {props.session.isAdmin && (
+          <>
+            <Col>
+              <Tooltip title="Export CSV" mouseEnterDelay={1}>
+                <Button onClick={exportToCsv} icon={<DownloadOutlined />} />
+              </Tooltip>
+            </Col>
+            <Col>
+              <Tooltip title="Import CSV" mouseEnterDelay={1}>
+                <Button onClick={importFromCsv} icon={<UploadOutlined />} />
+              </Tooltip>
+            </Col>
+          </>
+        )}
         <Col>
           <Tooltip title="Hide old events" mouseEnterDelay={1}>
             <Button
