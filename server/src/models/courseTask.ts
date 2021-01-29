@@ -92,4 +92,7 @@ export class CourseTask {
 
   @Column({ default: '' })
   special: string;
+
+  @Column({ nullable: true, type: 'int' })
+  duration: number | null;
 }
