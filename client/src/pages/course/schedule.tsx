@@ -163,6 +163,8 @@ const createCourseEventFromTask = (task: CourseTaskDetails, type: string): Cours
       githubId: task.taskOwner ? task.taskOwner.githubId : '',
     },
     isTask: true,
+    special: task.special,
+    duration: task.duration,
   } as CourseEvent;
 };
 
