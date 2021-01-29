@@ -131,11 +131,7 @@ export function SchedulePage(props: CoursePageProps) {
           </Tooltip>
         </Col>
         <Col>
-          <UserSettings
-            tags={tags}
-            setStoredTagColors={setStoredTagColors}
-            storedTagColors={storedTagColors || {}}
-          />
+          <UserSettings tags={tags} setStoredTagColors={setStoredTagColors} storedTagColors={storedTagColors} />
         </Col>
         <Col>
           <Button
@@ -157,7 +153,7 @@ export function SchedulePage(props: CoursePageProps) {
         isAdmin={props.session.isAdmin}
         courseId={props.course.id}
         refreshData={loadData}
-        storedTagColors={storedTagColors || {}}
+        storedTagColors={storedTagColors}
         alias={props.course.alias}
       />
     </PageLayout>
@@ -182,11 +178,14 @@ const createCourseEventFromTask = (task: CourseTaskDetails, type: string): Cours
       type: type,
       name: task.name,
       descriptionUrl: task.descriptionUrl,
+      id: task.taskId,
     },
     organizer: {
       githubId: task.taskOwner ? task.taskOwner.githubId : '',
     },
     isTask: true,
+    special: task.special,
+    duration: task.duration,
   } as CourseEvent;
 };
 

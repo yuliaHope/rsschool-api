@@ -20,13 +20,6 @@ export enum EventTypeColor {
   interview = '#63ab91',
 }
 
-export const TaskTypes = {
-  deadline: 'deadline',
-  test: 'test',
-  newtask: 'newtask',
-  lecture: 'lecture',
-};
-
 export const EventTypeToName: Record<string, string> = {
   lecture_online: 'online lecture',
   lecture_offline: 'offline lecture',
@@ -92,5 +85,7 @@ export const SPECIAL_EVENT_TAGS = [
   'html',
   'git',
   'markdown',
-  'task',
+  'mobile',
+  'kotlin',
+  'aws',
 ];
