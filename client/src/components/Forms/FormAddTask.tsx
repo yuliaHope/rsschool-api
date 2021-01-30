@@ -7,7 +7,7 @@ import { Course } from '../../services/models';
 import { UserSearch } from 'components/UserSearch';
 import { UserService } from 'services/user';
 import { formatTimezoneToUTC } from 'services/formatter';
-import DynamicFieldSet from './dmitriSiniakov/DynamicLinksField'
+import DynamicFieldSet from '../DynamicLinksField'
 import { union } from 'lodash';
 import { Form, Input, InputNumber, Button, Upload, DatePicker, Select, Alert } from 'antd';
 import { UploadOutlined } from '@ant-design/icons';

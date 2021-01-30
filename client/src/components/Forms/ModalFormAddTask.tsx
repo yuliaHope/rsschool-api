@@ -1,8 +1,8 @@
 import React, { useState } from 'react';
 import { Modal, Tabs } from 'antd';
 import FormAddTask from './FormAddTask';
-import useWindowDimensions from './dmitriSiniakov/useWindowDimensions';
-import TaskPreview from './dmitriSiniakov/TaskPreview';
+import useWindowDimensions from '../../utils/useWindowDimensions';
+import TaskPreview from '../TaskPreview';
 
 const ModalWindowForForm: React.FC = ({ visible, handleCancel, darkTheme, course }: any) => {
   const [addingItem, setAddingItem] = useState(null);
