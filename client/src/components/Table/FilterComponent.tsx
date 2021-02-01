@@ -3,48 +3,31 @@ import { Space, Checkbox } from 'antd';
 import { CheckboxChangeEvent } from 'antd/lib/checkbox';
 
 type Props = {
-  setHiddenColumnsRows: Function,
-  hiddenColumnsRows: Set<string>,
+  handleFilter: (event: CheckboxChangeEvent) => void,
+  hiddenColumnsRows: Array<string>,
   eventTypes: Array<string>,
 }
 
-const FilterComponent: React.FC<Props> = ({ setHiddenColumnsRows,  hiddenColumnsRows, eventTypes }) => {
+const FilterComponent: React.FC<Props> = ({ hiddenColumnsRows, eventTypes, handleFilter }) => {
     const columnsName: Array<string> = ['Type', 'Special', 'Url', 'Organizer', 'Place'];
     
-    const handledFilter = (event: CheckboxChangeEvent) => {
-        const {value} = event.target;
-        const {checked} = event.target;
-        if (checked && hiddenColumnsRows.has(value)) {
-          setHiddenColumnsRows((prevState: Set<string>) => {
-            prevState.delete(value);
-            const newArr = Array.from(prevState);
-            return new Set([...newArr]);
-          });
-        }
-        if (!checked && !hiddenColumnsRows.has(value)) {
-          setHiddenColumnsRows((prevState: Set<string>) => {
-            const newArr = Array.from(prevState);
-            return new Set([...newArr, value]);
-          });
-        }
-    };
     return (
       <Space style={{alignItems: 'flex-start'}}>
         <Space direction='vertical'>
-          <span style={{fontWeight: 'bold'}}>Events</span>
+          <span style={{fontWeight: 'bold'}}>Columns</span>
             {
                 columnsName.map((el, ind) => {
-                    return <Checkbox key={`${ind}_${el}`} value={el} checked={!hiddenColumnsRows.has(el)} onChange={handledFilter}>{el}</Checkbox>;
+                    return <Checkbox key={`${ind}_${el}`} value={el} checked={!hiddenColumnsRows.includes(el)} onChange={handleFilter}>{el}</Checkbox>;
                 })
             } 
         </Space>
         {
           eventTypes.length !== 0 
           ? (<Space direction='vertical'>
-              <span style={{fontWeight: 'bold'}}>Columns</span>
+              <span style={{fontWeight: 'bold'}}>Events</span>
               {
                   eventTypes.map((el, ind) => {
-                      return <Checkbox key={`${ind}_${el}`} value={el} checked={!hiddenColumnsRows.has(el)} onChange={handledFilter}>{el}</Checkbox>;
+                      return <Checkbox key={`${ind}_${el}`} value={el} checked={!hiddenColumnsRows.includes(el)} onChange={handleFilter}>{el}</Checkbox>;
                   })
               } 
           </Space>)

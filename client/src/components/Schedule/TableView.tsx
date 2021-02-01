@@ -2,6 +2,7 @@ import React, { useMemo, useState } from 'react';
 import { SettingOutlined } from '@ant-design/icons';
 import { Popconfirm, Dropdown, Table, Typography, Space, Form, Button, message } from 'antd';
 import { ColumnsType } from 'antd/lib/table';
+import { CheckboxChangeEvent } from 'antd/lib/checkbox';
 import moment from 'moment-timezone';
 import mergeWith from 'lodash/mergeWith';
 import { GithubUserLink } from 'components';
@@ -18,6 +19,8 @@ import { CourseEvent, CourseService } from 'services/course';
 import { ScheduleRow, TaskTypes } from './model';
 import EditableCell from './EditableCell';
 import FilterComponent from '../Table/FilterComponent';
+import Link from 'next/link';
+
 
 const { Text } = Typography;
 
@@ -28,6 +31,7 @@ type Props = {
   courseId: number;
   refreshData: Function;
   storedTagColors: object;
+  alias: string,
 };
 
 const styles  = {
@@ -37,10 +41,10 @@ const styles  = {
   padding: '15px',
 }
 
-const getColumns = (timeZone: string, hiddenColumnsRows:Set<string>, setHiddenColumnsRows: Function, storedTagColors: object, distinctTags: Array<string>) => [
+const getColumns = (timeZone: string, hiddenColumnsRows:Array<string>, handleFilter: Function, storedTagColors: object, distinctTags: Array<string>, alias: string) => [
   {
     title:<Dropdown overlayStyle={styles} 
-    overlay={() => <FilterComponent eventTypes={distinctTags} setHiddenColumnsRows={setHiddenColumnsRows} hiddenColumnsRows={hiddenColumnsRows}/>} 
+    overlay={() => <FilterComponent eventTypes={distinctTags} hiddenColumnsRows={hiddenColumnsRows} handleFilter={handleFilter} />} 
     placement="bottomRight" 
     trigger={['click']}>
         <SettingOutlined />
@@ -84,7 +88,19 @@ const getColumns = (timeZone: string, hiddenColumnsRows:Set<string>, setHiddenCo
     title: 'Name',
     width: 150,
     dataIndex: ['event', 'name'],
-    render: (value: string) => <Text strong>{value}</Text>,
+    render: (value: string, row: any) => {
+      return (
+        <Link 
+          href={`/course/entityDetails?course=${alias}&entityType=${row.isTask ? 'task' : 'event'}&entityId=${row.id}`} 
+        >
+          <a>
+            <Text style={{ width: '100%', height: '100%', display: 'block' }} strong>
+              {value}
+            </Text>
+          </a>
+        </Link>
+      );
+    },
     ...getColumnSearchProps('event.name'),
     editable: true,
   },
@@ -121,10 +137,10 @@ const getColumns = (timeZone: string, hiddenColumnsRows:Set<string>, setHiddenCo
   },
 ];
 
-export function TableView({ data, timeZone, isAdmin, courseId, refreshData, storedTagColors }: Props) {
+export function TableView({ data, timeZone, isAdmin, courseId, refreshData, storedTagColors, alias }: Props) {
   const [form] = Form.useForm();
   const [editingKey, setEditingKey] = useState('');
-  const [hiddenColumnsRows, setHiddenColumnsRows] = useState<Set<string>>(new Set);
+  const [hiddenColumnsRows, setHiddenColumnsRows] = useState<Array<string>>([]);
   const courseService = useMemo(() => new CourseService(courseId), [courseId]);
   const distinctTags = Array.from(new Set(data.map(element => element.event.type)));
   
@@ -147,6 +163,21 @@ export function TableView({ data, timeZone, isAdmin, courseId, refreshData, stor
       await refreshData();
     } catch {
       message.error('Failed to delete item. Please try later.');
+    }
+  };
+
+  const handleFilter = (event: CheckboxChangeEvent) => {
+    const {value, checked} = event.target;
+    if (checked && hiddenColumnsRows.includes(value)) {
+        setHiddenColumnsRows((prevState: Array<string>) => {
+        const newArr = prevState.filter(el => el !== value);
+        return newArr;
+      });
+    }
+    if (!checked && !hiddenColumnsRows.includes(value)) {
+        setHiddenColumnsRows((prevState: Array<string>) => {
+        return [...prevState, value];
+      });
     }
   };
 
@@ -203,37 +234,38 @@ export function TableView({ data, timeZone, isAdmin, courseId, refreshData, stor
               </Popconfirm>
             </span>
           ) : (
-            <Space>
-              <Button
-                type="link"
-                style={{ padding: 0 }}
-                disabled={editingKey !== ''}
-                onClick={event => {
-                  event.stopPropagation();
-                  edit(record);
-                }}
-              >
-                Edit
-              </Button>
-              <Popconfirm
-                title="Sure to delete?"
-                onConfirm={() => {
-                  handleDelete(record.id);
-                }}
-              >
-                <Button type="link" style={{ padding: 0 }} disabled={editingKey !== ''}>
-                  Delete
+              <Space>
+                <Button
+                  type="link"
+                  style={{ padding: 0 }}
+                  disabled={editingKey !== ''}
+                  onClick={event => {
+                    event.stopPropagation();
+                    edit(record);
+                  }}
+                >
+                  Edit
                 </Button>
-              </Popconfirm>
-            </Space>
-          );
+                <Popconfirm
+                  title="Sure to delete?"
+                  onConfirm={() => {
+                    handleDelete(record.id);
+                  }}
+                >
+                  <Button type="link" style={{ padding: 0 }} disabled={editingKey !== ''}>
+                    Delete
+                  </Button>
+                </Popconfirm>
+              </Space>
+            );
         },
       },
     ];
   };
-
-  const listTasks = data.filter((element) => element?.event.type && !hiddenColumnsRows.has(element.event.type.toString()));
-  const sortedColumns = getColumns(timeZone, hiddenColumnsRows, setHiddenColumnsRows, storedTagColors, distinctTags).filter((element) => element?.title && !hiddenColumnsRows.has(element.title.toString()));
+  console.log(hiddenColumnsRows);
+  
+  const listTasks = data.filter((element) => element?.event.type && !hiddenColumnsRows.includes(element.event.type.toString()));
+  const sortedColumns = getColumns(timeZone, hiddenColumnsRows, handleFilter, storedTagColors, distinctTags, alias).filter((element) => element?.title && !hiddenColumnsRows.includes(element.title.toString()));
   const columns = [...sortedColumns, ...getAdminColumn(isAdmin)] as ColumnsType<CourseEvent>;
 
   const mergedColumns = columns.map((col: any) => {
