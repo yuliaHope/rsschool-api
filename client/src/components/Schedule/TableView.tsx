@@ -262,7 +262,6 @@ export function TableView({ data, timeZone, isAdmin, courseId, refreshData, stor
       },
     ];
   };
-  console.log(hiddenColumnsRows);
   
   const listTasks = data.filter((element) => element?.event.type && !hiddenColumnsRows.includes(element.event.type.toString()));
   const sortedColumns = getColumns(timeZone, hiddenColumnsRows, handleFilter, storedTagColors, distinctTags, alias).filter((element) => element?.title && !hiddenColumnsRows.includes(element.title.toString()));
