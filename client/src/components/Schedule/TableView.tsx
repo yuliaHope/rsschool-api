@@ -132,7 +132,7 @@ export function TableView({ data, timeZone, isAdmin, courseId, refreshData, stor
   const [editingKey, setEditingKey] = useState('');
   const courseService = useMemo(() => new CourseService(courseId), [courseId]);
 
-  const isEditing = (record: CourseEvent) => `${record.id}${record.event.type}` === editingKey;
+  const isEditing = (record: CourseEvent) => `${record.id}${record.event.type}${record.event.name}` === editingKey;
 
   const edit = (record: CourseEvent) => {
     form.setFieldsValue({
@@ -142,7 +142,7 @@ export function TableView({ data, timeZone, isAdmin, courseId, refreshData, stor
       special: record.special ? record.special.split(',') : [],
       duration: record.duration ? Number(record.duration) : null,
     });
-    setEditingKey(`${record.id}${record.event.type}`);
+    setEditingKey(`${record.id}${record.event.type}${record.event.name}`);
   };
 
   const handleDelete = async (id: number) => {

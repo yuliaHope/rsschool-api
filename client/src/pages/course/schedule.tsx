@@ -1,5 +1,5 @@
 import { Col, Row, Select, Tooltip, Button } from 'antd';
-import { EyeOutlined, EyeInvisibleOutlined, DownloadOutlined, UploadOutlined } from '@ant-design/icons';
+import { EyeOutlined, EyeInvisibleOutlined, DownloadOutlined, UploadOutlined, PlusOutlined } from '@ant-design/icons';
 import { withSession, PageLayout } from 'components';
 import { TableView, CalendarView, ListView } from 'components/Schedule';
 import withCourseData from 'components/withCourseData';
@@ -13,6 +13,7 @@ import { isMobileOnly } from 'mobile-device-detect';
 import { ViewMode } from 'components/Schedule/model';
 import UserSettings from 'components/UserSettings/UserSettings';
 import { DEFAULT_COLOR } from 'components/UserSettings/userSettingsHandlers';
+import ModalFormAddEntity from '../../components/Forms/ModalFormAddEntity';
 import moment from 'moment-timezone';
 
 const { Option } = Select;
@@ -34,6 +35,7 @@ export function SchedulePage(props: CoursePageProps) {
   const [scheduleViewMode, setScheduleViewMode] = useLocalStorage<string>(LOCAL_VIEW_MODE, getDefaultViewMode());
   const [storedTagColors, setStoredTagColors] = useLocalStorage<object>('tagColors', DEFAULT_COLOR);
   const [isOldEventsHidden, setOldEventsHidden] = useLocalStorage<boolean>(LOCAL_HIDE_OLD_EVENTS, false);
+  const [isModalOpen, setModalOpen] = useState(false);
   const courseService = useMemo(() => new CourseService(props.course.id), [props.course.id]);
   const relevantEvents = useMemo(() => {
     const yesterday = moment.utc().subtract(1, 'day');
@@ -65,6 +67,10 @@ export function SchedulePage(props: CoursePageProps) {
 
   const toggleOldEvents = () => {
     setOldEventsHidden(!isOldEventsHidden);
+  };
+
+  const closeModal = () => {
+    setModalOpen(false);
   };
 
   const exportToCsv = () => {
@@ -111,6 +117,15 @@ export function SchedulePage(props: CoursePageProps) {
                 <Button onClick={importFromCsv} icon={<UploadOutlined />} />
               </Tooltip>
             </Col>
+            <Col>
+              <Button
+                type="primary"
+                icon={<PlusOutlined />}
+                onClick={() => {
+                  setModalOpen(true);
+                }}
+              />
+            </Col>
           </>
         )}
         <Col>
@@ -135,6 +150,9 @@ export function SchedulePage(props: CoursePageProps) {
         storedTagColors={storedTagColors}
         alias={props.course.alias}
       />
+      {isModalOpen && (
+        <ModalFormAddEntity visible={isModalOpen} handleCancel={closeModal} courseId={props.course.id} tags={tags} />
+      )}
     </PageLayout>
   );
 }
