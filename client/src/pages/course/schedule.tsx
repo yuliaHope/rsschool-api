@@ -30,12 +30,13 @@ const TaskTypes = {
 export function SchedulePage(props: CoursePageProps) {
   const [loading, withLoading] = useLoading(false);
   const [data, setData] = useState<CourseEvent[]>([]);
-  const [tags, setTags] = useState<string[]>([]);
+  const [typesFromBase, setTypesFromBase] = useState<string[]>([]);
   const [timeZone, setTimeZone] = useState(Intl.DateTimeFormat().resolvedOptions().timeZone);
   const [scheduleViewMode, setScheduleViewMode] = useLocalStorage<string>(LOCAL_VIEW_MODE, getDefaultViewMode());
   const [storedTagColors, setStoredTagColors] = useLocalStorage<object>('tagColors', DEFAULT_COLOR);
   const [isOldEventsHidden, setOldEventsHidden] = useLocalStorage<boolean>(LOCAL_HIDE_OLD_EVENTS, false);
   const [isModalOpen, setModalOpen] = useState(false);
+  const [editableRecord, setEditableRecord] = useState(null);
   const courseService = useMemo(() => new CourseService(props.course.id), [props.course.id]);
   const relevantEvents = useMemo(() => {
     const yesterday = moment.utc().subtract(1, 'day');
@@ -50,7 +51,7 @@ export function SchedulePage(props: CoursePageProps) {
     setData(data);
 
     const distinctTags = Array.from(new Set(data.map(element => element.event.type)));
-    setTags(distinctTags);
+    setTypesFromBase(distinctTags);
   };
 
   useAsync(withLoading(loadData), [courseService]);
@@ -70,6 +71,7 @@ export function SchedulePage(props: CoursePageProps) {
   };
 
   const closeModal = () => {
+    setEditableRecord(null);
     setModalOpen(false);
   };
 
@@ -138,7 +140,11 @@ export function SchedulePage(props: CoursePageProps) {
           </Tooltip>
         </Col>
         <Col>
-          <UserSettings tags={tags} setStoredTagColors={setStoredTagColors} storedTagColors={storedTagColors} />
+          <UserSettings
+            typesFromBase={typesFromBase}
+            setStoredTagColors={setStoredTagColors}
+            storedTagColors={storedTagColors}
+          />
         </Col>
       </Row>
       <ScheduleView
@@ -149,9 +155,17 @@ export function SchedulePage(props: CoursePageProps) {
         refreshData={loadData}
         storedTagColors={storedTagColors}
         alias={props.course.alias}
+        openModal={setModalOpen}
+        editRecord={setEditableRecord}
       />
       {isModalOpen && (
-        <ModalFormAddEntity visible={isModalOpen} handleCancel={closeModal} courseId={props.course.id} tags={tags} />
+        <ModalFormAddEntity
+          visible={isModalOpen}
+          editableRecord={editableRecord}
+          handleCancel={closeModal}
+          courseId={props.course.id}
+          typesFromBase={typesFromBase}
+        />
       )}
     </PageLayout>
   );

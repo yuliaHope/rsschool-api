@@ -1,5 +1,5 @@
 import React, { useMemo, useState } from 'react';
-import { SettingOutlined } from '@ant-design/icons';
+import { SettingOutlined, EditOutlined } from '@ant-design/icons';
 import { Popconfirm, Table, Typography, Space, Form, Button, message } from 'antd';
 import { ColumnsType } from 'antd/lib/table';
 import moment from 'moment-timezone';
@@ -34,6 +34,8 @@ type Props = {
   refreshData: Function;
   storedTagColors?: object;
   alias: string;
+  openModal: (flag: boolean) => void;
+  editRecord: (record: any) => void;
 };
 
 const getColumns = (timeZone: string, alias: string, storedTagColors?: object) => [
@@ -127,7 +129,17 @@ const getColumns = (timeZone: string, alias: string, storedTagColors?: object) =
   },
 ];
 
-export function TableView({ data, timeZone, isAdmin, courseId, refreshData, storedTagColors, alias }: Props) {
+export function TableView({
+  data,
+  timeZone,
+  isAdmin,
+  courseId,
+  refreshData,
+  storedTagColors,
+  alias,
+  openModal,
+  editRecord,
+}: Props) {
   const [form] = Form.useForm();
   const [editingKey, setEditingKey] = useState('');
   const courseService = useMemo(() => new CourseService(courseId), [courseId]);
@@ -185,6 +197,20 @@ export function TableView({ data, timeZone, isAdmin, courseId, refreshData, stor
     setEditingKey('');
   };
 
+  const handleFullEdit = async (id: number, isTask?: boolean) => {
+    if (isTask) {
+      const task = await courseService.getCourseTask(`${id}`);
+
+      editRecord({ ...task, isTask: true });
+    } else {
+      const event = await courseService.getEventById(`${id}`);
+
+      editRecord(event);
+    }
+
+    openModal(true);
+  };
+
   const getAdminColumn = (isAdmin: boolean) => {
     if (!isAdmin) {
       return [];
@@ -225,6 +251,7 @@ export function TableView({ data, timeZone, isAdmin, courseId, refreshData, stor
               >
                 Edit
               </Button>
+
               <Popconfirm
                 title="Sure to delete?"
                 onConfirm={() => {
@@ -235,6 +262,14 @@ export function TableView({ data, timeZone, isAdmin, courseId, refreshData, stor
                   Delete
                 </Button>
               </Popconfirm>
+
+              <Button
+                disabled={editingKey !== ''}
+                icon={<EditOutlined />}
+                onClick={() => {
+                  handleFullEdit(record.id, record.isTask);
+                }}
+              />
             </Space>
           );
         },
