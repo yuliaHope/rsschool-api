@@ -13,7 +13,7 @@ import { isMobileOnly } from 'mobile-device-detect';
 import { ViewMode } from 'components/Schedule/model';
 import UserSettings from 'components/UserSettings/UserSettings';
 import { DEFAULT_COLOR } from 'components/UserSettings/userSettingsHandlers';
-import ModalFormAddEntity from '../../components/Forms/ModalFormAddEntity';
+import ModalFormAddEntity from '../../components/Schedule/ModalFormAddEntity';
 import moment from 'moment-timezone';
 
 const { Option } = Select;
