@@ -205,7 +205,7 @@ export function TableView({
     } else {
       const event = await courseService.getEventById(`${id}`);
 
-      editRecord(event);
+      editRecord({ ...event });
     }
 
     openModal(true);

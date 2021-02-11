@@ -13,7 +13,7 @@ import { isMobileOnly } from 'mobile-device-detect';
 import { ViewMode } from 'components/Schedule/model';
 import UserSettings from 'components/UserSettings/UserSettings';
 import { DEFAULT_COLOR } from 'components/UserSettings/userSettingsHandlers';
-import ModalFormAddEntity from '../../components/Schedule/ModalFormAddEntity';
+import ModalFormEntity from '../../components/Schedule/ModalFormEntity';
 import moment from 'moment-timezone';
 
 const { Option } = Select;
@@ -70,7 +70,7 @@ export function SchedulePage(props: CoursePageProps) {
     setOldEventsHidden(!isOldEventsHidden);
   };
 
-  const closeModal = () => {
+  const closeModal = async () => {
     setEditableRecord(null);
     setModalOpen(false);
   };
@@ -159,12 +159,13 @@ export function SchedulePage(props: CoursePageProps) {
         editRecord={setEditableRecord}
       />
       {isModalOpen && (
-        <ModalFormAddEntity
+        <ModalFormEntity
           visible={isModalOpen}
           editableRecord={editableRecord}
           handleCancel={closeModal}
           courseId={props.course.id}
           typesFromBase={typesFromBase}
+          refreshData={loadData}
         />
       )}
     </PageLayout>
