@@ -330,7 +330,7 @@ const getCourseTaskDataForUpdate = (entity: CourseEvent) => {
 
   const dataForUpdate = {
     [taskDate]: entity.dateTime,
-    taskOwner: { githubId: entity.organizer.githubId },
+    taskOwnerId: entity.organizer.githubId,
     special: entity.special,
     duration: entity.duration,
   };
