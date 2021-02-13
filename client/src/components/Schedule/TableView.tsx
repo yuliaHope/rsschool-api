@@ -157,12 +157,17 @@ export function TableView({
     setEditingKey(`${record.id}${record.event.type}${record.event.name}`);
   };
 
-  const handleDelete = async (id: number) => {
+  const handleDelete = async (id: number, isTask?: boolean) => {
     try {
-      await courseService.deleteCourseEvent(id);
+      if (isTask) {
+        await courseService.deleteCourseTask(id);
+      } else {
+        await courseService.deleteCourseEvent(id);
+      }
+
       await refreshData();
     } catch {
-      message.error('Failed to delete item. Please try later.');
+      message.error(`Failed to delete ${isTask ? 'task' : 'event'}. Please try later.`);
     }
   };
 
@@ -255,7 +260,7 @@ export function TableView({
               <Popconfirm
                 title="Sure to delete?"
                 onConfirm={() => {
-                  handleDelete(record.id);
+                  handleDelete(record.id, record.isTask);
                 }}
               >
                 <Button type="link" style={{ padding: 0 }} disabled={editingKey !== ''}>
@@ -318,7 +323,7 @@ export function TableView({
 const getCourseEventDataForUpdate = (entity: CourseEvent) => {
   return {
     dateTime: entity.dateTime,
-    organizerId: entity.organizerId,
+    organizerId: entity.organizer.githubId,
     place: entity.place,
     special: entity.special,
     duration: entity.duration,

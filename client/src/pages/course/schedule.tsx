@@ -164,7 +164,6 @@ export function SchedulePage(props: CoursePageProps) {
           editableRecord={editableRecord}
           handleCancel={closeModal}
           courseId={props.course.id}
-          typesFromBase={typesFromBase}
           refreshData={loadData}
         />
       )}
