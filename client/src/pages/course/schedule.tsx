@@ -155,8 +155,6 @@ export function SchedulePage(props: CoursePageProps) {
         refreshData={loadData}
         storedTagColors={storedTagColors}
         alias={props.course.alias}
-        openModal={setModalOpen}
-        editRecord={setEditableRecord}
       />
       {isModalOpen && (
         <ModalFormEntity
