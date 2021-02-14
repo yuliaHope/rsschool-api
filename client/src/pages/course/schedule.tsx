@@ -11,8 +11,8 @@ import { useAsync, useLocalStorage } from 'react-use';
 import { useLoading } from 'components/useLoading';
 import { isMobileOnly } from 'mobile-device-detect';
 import { ViewMode } from 'components/Schedule/model';
-import UserSettings from 'components/UserSettings/UserSettings';
-import { DEFAULT_COLOR } from 'components/UserSettings/userSettingsHandlers';
+import UserSettings from 'components/Schedule/UserSettings/UserSettings';
+import { DEFAULT_COLORS } from 'components/Schedule/UserSettings/userSettingsHandlers';
 import ModalFormEntity from '../../components/Schedule/ModalFormEntity';
 import moment from 'moment-timezone';
 
@@ -33,7 +33,7 @@ export function SchedulePage(props: CoursePageProps) {
   const [typesFromBase, setTypesFromBase] = useState<string[]>([]);
   const [timeZone, setTimeZone] = useState(Intl.DateTimeFormat().resolvedOptions().timeZone);
   const [scheduleViewMode, setScheduleViewMode] = useLocalStorage<string>(LOCAL_VIEW_MODE, getDefaultViewMode());
-  const [storedTagColors, setStoredTagColors] = useLocalStorage<object>('tagColors', DEFAULT_COLOR);
+  const [storedTagColors, setStoredTagColors] = useLocalStorage<object>('tagColors', DEFAULT_COLORS);
   const [isOldEventsHidden, setOldEventsHidden] = useLocalStorage<boolean>(LOCAL_HIDE_OLD_EVENTS, false);
   const [isModalOpen, setModalOpen] = useState(false);
   const [editableRecord, setEditableRecord] = useState(null);
