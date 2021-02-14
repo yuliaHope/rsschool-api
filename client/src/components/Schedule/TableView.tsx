@@ -289,10 +289,10 @@ export function TableView({ data, timeZone, isAdmin, courseId, refreshData, stor
 const getCourseEventDataForUpdate = (entity: CourseEvent) => {
   return {
     dateTime: entity.dateTime,
-    organizerId: entity.organizer.githubId,
-    place: entity.place,
-    special: entity.special,
-    duration: entity.duration,
+    organizerId: entity.organizerId || null,
+    place: entity.place || '',
+    special: entity.special || '',
+    duration: entity.duration || null,
   };
 };
 
@@ -301,9 +301,9 @@ const getCourseTaskDataForUpdate = (entity: CourseEvent) => {
 
   const dataForUpdate = {
     [taskDate]: entity.dateTime,
-    taskOwnerId: entity.organizer.githubId,
-    special: entity.special,
-    duration: entity.duration,
+    taskOwnerId: entity.organizer.id,
+    special: entity.special || '',
+    duration: entity.duration || null,
   };
 
   if (entity.event.type !== 'deadline') {
@@ -316,7 +316,7 @@ const getCourseTaskDataForUpdate = (entity: CourseEvent) => {
 const getNewDataForUpdate = (entity: CourseEvent) => {
   const dataForUpdate = {
     name: entity.event.name,
-    descriptionUrl: entity.event.descriptionUrl,
+    descriptionUrl: entity.event.descriptionUrl || '',
   };
 
   if (entity.event.type !== 'deadline') {
