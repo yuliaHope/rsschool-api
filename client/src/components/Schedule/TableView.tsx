@@ -301,7 +301,7 @@ const getCourseTaskDataForUpdate = (entity: CourseEvent) => {
 
   const dataForUpdate = {
     [taskDate]: entity.dateTime,
-    taskOwnerId: entity.organizer.id,
+    taskOwnerId: entity.organizer.id || null,
     special: entity.special || '',
     duration: entity.duration || null,
   };
