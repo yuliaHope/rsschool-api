@@ -10,7 +10,7 @@ import { TIMEZONES } from '../../configs/timezones';
 import { useAsync, useLocalStorage } from 'react-use';
 import { useLoading } from 'components/useLoading';
 import { isMobileOnly } from 'mobile-device-detect';
-import { ViewMode } from 'components/Schedule/model';
+import { ViewMode, SPECIAL_TASK_TYPES } from 'components/Schedule/model';
 import UserSettings from 'components/Schedule/UserSettings/UserSettings';
 import { DEFAULT_COLORS } from 'components/Schedule/UserSettings/userSettingsHandlers';
 import ModalFormEntity from '../../components/Schedule/ModalFormEntity';
@@ -19,13 +19,6 @@ import moment from 'moment-timezone';
 const { Option } = Select;
 const LOCAL_VIEW_MODE = 'scheduleViewMode';
 const LOCAL_HIDE_OLD_EVENTS = 'scheduleHideOldEvents';
-
-const TaskTypes = {
-  deadline: 'deadline',
-  test: 'test',
-  newtask: 'newtask',
-  lecture: 'lecture',
-};
 
 export function SchedulePage(props: CoursePageProps) {
   const [loading, withLoading] = useLoading(false);
@@ -171,10 +164,15 @@ export function SchedulePage(props: CoursePageProps) {
 
 const tasksToEvents = (tasks: CourseTaskDetails[]) => {
   return tasks.reduce((acc: Array<CourseEvent>, task: CourseTaskDetails) => {
-    if (task.type !== TaskTypes.test) {
+    if (task.type !== SPECIAL_TASK_TYPES.test) {
       acc.push(createCourseEventFromTask(task, task.type));
     }
-    acc.push(createCourseEventFromTask(task, task.type === TaskTypes.test ? TaskTypes.test : TaskTypes.deadline));
+    acc.push(
+      createCourseEventFromTask(
+        task,
+        task.type === SPECIAL_TASK_TYPES.test ? SPECIAL_TASK_TYPES.test : SPECIAL_TASK_TYPES.deadline,
+      ),
+    );
     return acc;
   }, []);
 };
@@ -182,7 +180,7 @@ const tasksToEvents = (tasks: CourseTaskDetails[]) => {
 const createCourseEventFromTask = (task: CourseTaskDetails, type: string): CourseEvent => {
   return {
     id: task.id,
-    dateTime: (type === TaskTypes.deadline ? task.studentEndDate : task.studentStartDate) || '',
+    dateTime: (type === SPECIAL_TASK_TYPES.deadline ? task.studentEndDate : task.studentStartDate) || '',
     event: {
       type: type,
       name: task.name,
