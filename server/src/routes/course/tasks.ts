@@ -72,6 +72,8 @@ export const getCourseTask = (_: ILogger) => async (ctx: Router.RouterContext) =
   const courseTask = await getRepository(CourseTask)
     .createQueryBuilder('courseTask')
     .innerJoinAndSelect('courseTask.task', 'task')
+    .leftJoin('courseTask.taskOwner', 'taskOwner')
+    .addSelect(['taskOwner.githubId', 'taskOwner.id', 'taskOwner.firstName', 'taskOwner.lastName'])
     .where(`courseTask.courseId = :courseId`, { courseId })
     .andWhere('courseTask.disabled = :disabled', { disabled: false })
     .andWhere('courseTask.id = :id', { id: courseTaskId })
@@ -86,11 +88,19 @@ export const getCourseTask = (_: ILogger) => async (ctx: Router.RouterContext) =
     githubPrRequired: !!(courseTask?.task as Task).githubPrRequired,
     verification: (courseTask?.task as Task).verification,
     descriptionUrl: (courseTask?.task as Task).descriptionUrl,
+    description: (courseTask?.task as Task).description,
     studentStartDate: courseTask?.studentStartDate,
     studentEndDate: courseTask?.studentEndDate,
     useJury: (courseTask?.task as Task).useJury,
     checker: courseTask?.checker,
     taskOwnerId: courseTask?.taskOwnerId,
+    taskOwner: courseTask?.taskOwner
+      ? {
+          id: courseTask?.taskOwner.id,
+          githubId: courseTask?.taskOwner.githubId,
+          name: `${courseTask?.taskOwner.firstName} ${courseTask?.taskOwner.lastName}`,
+        }
+      : null,
     githubRepoName: (courseTask?.task as Task).githubRepoName,
     sourceGithubRepoUrl: (courseTask?.task as Task).sourceGithubRepoUrl,
     type: courseTask?.type || (courseTask?.task as Task).type,

@@ -1,15 +1,24 @@
 import React from 'react';
 import { useLocalStorage } from 'react-use';
-import { Row, Col, Typography, Tooltip } from 'antd';
+import Link from 'next/link';
+import { Row, Col, Typography, Tooltip, Button } from 'antd';
+import { CloseOutlined, EditOutlined } from '@ant-design/icons';
 import moment from 'moment-timezone';
 import css from 'styled-jsx/css';
 import { CourseTaskDetails } from 'services/course';
-import { DEFAULT_COLOR } from './UserSettings/userSettingsHandlers';
+import { DEFAULT_COLORS } from './UserSettings/userSettingsHandlers';
 import { renderTagWithStyle, tagsRenderer } from 'components/Table';
-import { GithubUserLink } from './GithubUserLink';
+import { GithubUserLink } from '../GithubUserLink';
 
-export function TaskDetails({ taskData }: { taskData: CourseTaskDetails }) {
-  const [storedTagColors] = useLocalStorage<object>('tagColors', DEFAULT_COLOR);
+type Props = {
+  taskData: CourseTaskDetails;
+  alias: string;
+  isPreview?: boolean;
+  onEdit?: (isTask?: boolean) => void;
+};
+
+const TaskDetails: React.FC<Props> = ({ taskData, alias, isPreview, onEdit }) => {
+  const [storedTagColors] = useLocalStorage<object>('tagColors', DEFAULT_COLORS);
   const { Title, Text } = Typography;
 
   const {
@@ -53,12 +62,14 @@ export function TaskDetails({ taskData }: { taskData: CourseTaskDetails }) {
           </Row>
         )}
 
-        <Row justify="center" align="middle" gutter={[24, 20]}>
-          <Col>{renderTagWithStyle(type, storedTagColors)}</Col>
-          {special && <Col>{!!special && tagsRenderer(special.split(','))}</Col>}
-        </Row>
+        {type && (
+          <Row justify="center" align="middle" gutter={[24, 20]}>
+            <Col>{renderTagWithStyle(type, storedTagColors)}</Col>
+            {special && <Col>{!!special && tagsRenderer(special.split(','))}</Col>}
+          </Row>
+        )}
 
-        {taskOwner && (
+        {taskOwner && taskOwner.githubId && (
           <Tooltip title="Organizer">
             <Row justify="center" align="middle" gutter={[16, 16]}>
               <Col>
@@ -109,17 +120,43 @@ export function TaskDetails({ taskData }: { taskData: CourseTaskDetails }) {
             </Col>
           </Row>
         )}
+
+        {!isPreview && (
+          <>
+            <div className="button__close">
+              <Link href={`/course/schedule?course=${alias}`}>
+                <a>
+                  <Button icon={<CloseOutlined />} />
+                </a>
+              </Link>
+            </div>
+            <div className="button__edit">
+              <Button icon={<EditOutlined />} onClick={() => onEdit && onEdit(true)} />
+            </div>
+          </>
+        )}
       </div>
       <style jsx>{styles}</style>
     </>
   );
-}
+};
 
 const styles = css`
   .container {
+    position: relative;
     max-width: 1200px;
     margin: 20px auto;
     padding: 20px 10px;
+  }
+  .button__close {
+    position: absolute;
+    right: 10px;
+    top: 0;
+  }
+  .button__edit {
+    position: absolute;
+    left: 10px;
+    top: 0;
   }
 `;
 

@@ -132,7 +132,7 @@ export function TableView({ data, timeZone, isAdmin, courseId, refreshData, stor
   const [editingKey, setEditingKey] = useState('');
   const courseService = useMemo(() => new CourseService(courseId), [courseId]);
 
-  const isEditing = (record: CourseEvent) => `${record.id}${record.event.type}` === editingKey;
+  const isEditing = (record: CourseEvent) => `${record.id}${record.event.type}${record.event.name}` === editingKey;
 
   const edit = (record: CourseEvent) => {
     form.setFieldsValue({
@@ -142,15 +142,20 @@ export function TableView({ data, timeZone, isAdmin, courseId, refreshData, stor
       special: record.special ? record.special.split(',') : [],
       duration: record.duration ? Number(record.duration) : null,
     });
-    setEditingKey(`${record.id}${record.event.type}`);
+    setEditingKey(`${record.id}${record.event.type}${record.event.name}`);
   };
 
-  const handleDelete = async (id: number) => {
+  const handleDelete = async (id: number, isTask?: boolean) => {
     try {
-      await courseService.deleteCourseEvent(id);
+      if (isTask) {
+        await courseService.deleteCourseTask(id);
+      } else {
+        await courseService.deleteCourseEvent(id);
+      }
+
       await refreshData();
     } catch {
-      message.error('Failed to delete item. Please try later.');
+      message.error(`Failed to delete ${isTask ? 'task' : 'event'}. Please try later.`);
     }
   };
 
@@ -225,10 +230,11 @@ export function TableView({ data, timeZone, isAdmin, courseId, refreshData, stor
               >
                 Edit
               </Button>
+
               <Popconfirm
                 title="Sure to delete?"
                 onConfirm={() => {
-                  handleDelete(record.id);
+                  handleDelete(record.id, record.isTask);
                 }}
               >
                 <Button type="link" style={{ padding: 0 }} disabled={editingKey !== ''}>
@@ -283,10 +289,10 @@ export function TableView({ data, timeZone, isAdmin, courseId, refreshData, stor
 const getCourseEventDataForUpdate = (entity: CourseEvent) => {
   return {
     dateTime: entity.dateTime,
-    organizerId: entity.organizerId,
-    place: entity.place,
-    special: entity.special,
-    duration: entity.duration,
+    organizerId: entity.organizerId || null,
+    place: entity.place || '',
+    special: entity.special || '',
+    duration: entity.duration || null,
   };
 };
 
@@ -295,9 +301,9 @@ const getCourseTaskDataForUpdate = (entity: CourseEvent) => {
 
   const dataForUpdate = {
     [taskDate]: entity.dateTime,
-    taskOwner: { githubId: entity.organizer.githubId },
-    special: entity.special,
-    duration: entity.duration,
+    taskOwnerId: entity.organizer.id || null,
+    special: entity.special || '',
+    duration: entity.duration || null,
   };
 
   if (entity.event.type !== 'deadline') {
@@ -310,7 +316,7 @@ const getCourseTaskDataForUpdate = (entity: CourseEvent) => {
 const getNewDataForUpdate = (entity: CourseEvent) => {
   const dataForUpdate = {
     name: entity.event.name,
-    descriptionUrl: entity.event.descriptionUrl,
+    descriptionUrl: entity.event.descriptionUrl || '',
   };
 
   if (entity.event.type !== 'deadline') {
