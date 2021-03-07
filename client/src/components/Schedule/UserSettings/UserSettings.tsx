@@ -3,14 +3,13 @@ import { Button, Drawer } from 'antd';
 import { SettingOutlined } from '@ant-design/icons';
 import TagColor from './TagColor';
 
-
 type Props = {
-  tags: string[];
-  storedTagColors: object;
+  typesFromBase: string[];
+  storedTagColors?: object;
   setStoredTagColors: (value: object) => void;
 };
 
-const UserSettings: React.FC<Props> = ({ storedTagColors, setStoredTagColors, tags }) => {
+const UserSettings: React.FC<Props> = ({ storedTagColors, setStoredTagColors, typesFromBase }) => {
   const [isOpen, setIsOpen] = useState(false);
   const showDrawer = () => {
     setIsOpen(true);
@@ -21,10 +20,9 @@ const UserSettings: React.FC<Props> = ({ storedTagColors, setStoredTagColors, ta
 
   return (
     <>
-      <Button icon={<SettingOutlined />} title='User settings' size='middle' type="primary" onClick={showDrawer} />
-
+      <Button icon={<SettingOutlined />} title="User settings" size="middle" type="primary" onClick={showDrawer} />
       <Drawer title="User Settings" placement="right" closable={false} onClose={onClose} visible={isOpen}>
-        <TagColor tags={tags} setStoredTagColors={setStoredTagColors} storedTagColors={storedTagColors} />
+        <TagColor tags={typesFromBase} setStoredTagColors={setStoredTagColors} storedTagColors={storedTagColors} />
       </Drawer>
     </>
   );

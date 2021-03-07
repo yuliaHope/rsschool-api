@@ -1,5 +1,5 @@
 import { Col, Row, Select, Tooltip, Button } from 'antd';
-import { EyeOutlined, EyeInvisibleOutlined, DownloadOutlined, UploadOutlined } from '@ant-design/icons';
+import { EyeOutlined, EyeInvisibleOutlined, DownloadOutlined, UploadOutlined, PlusOutlined } from '@ant-design/icons';
 import { withSession, PageLayout } from 'components';
 import { TableView, CalendarView, ListView } from 'components/Schedule';
 import withCourseData from 'components/withCourseData';
@@ -10,30 +10,26 @@ import { TIMEZONES } from '../../configs/timezones';
 import { useAsync, useLocalStorage } from 'react-use';
 import { useLoading } from 'components/useLoading';
 import { isMobileOnly } from 'mobile-device-detect';
-import { ViewMode } from 'components/Schedule/model';
-import UserSettings from 'components/UserSettings/UserSettings';
-import { DEFAULT_COLOR } from 'components/UserSettings/userSettingsHandlers';
+import { ViewMode, SPECIAL_TASK_TYPES } from 'components/Schedule/model';
+import UserSettings from 'components/Schedule/UserSettings/UserSettings';
+import { DEFAULT_COLORS } from 'components/Schedule/UserSettings/userSettingsHandlers';
+import ModalFormEntity from '../../components/Schedule/ModalFormEntity';
 import moment from 'moment-timezone';
 
 const { Option } = Select;
 const LOCAL_VIEW_MODE = 'scheduleViewMode';
 const LOCAL_HIDE_OLD_EVENTS = 'scheduleHideOldEvents';
 
-const TaskTypes = {
-  deadline: 'deadline',
-  test: 'test',
-  newtask: 'newtask',
-  lecture: 'lecture',
-};
-
 export function SchedulePage(props: CoursePageProps) {
   const [loading, withLoading] = useLoading(false);
   const [data, setData] = useState<CourseEvent[]>([]);
-  const [tags, setTags] = useState<string[]>([]);
+  const [typesFromBase, setTypesFromBase] = useState<string[]>([]);
   const [timeZone, setTimeZone] = useState(Intl.DateTimeFormat().resolvedOptions().timeZone);
   const [scheduleViewMode, setScheduleViewMode] = useLocalStorage<string>(LOCAL_VIEW_MODE, getDefaultViewMode());
-  const [storedTagColors, setStoredTagColors] = useLocalStorage<object>('tagColors', DEFAULT_COLOR);
+  const [storedTagColors, setStoredTagColors] = useLocalStorage<object>('tagColors', DEFAULT_COLORS);
   const [isOldEventsHidden, setOldEventsHidden] = useLocalStorage<boolean>(LOCAL_HIDE_OLD_EVENTS, false);
+  const [isModalOpen, setModalOpen] = useState(false);
+  const [editableRecord, setEditableRecord] = useState(null);
   const courseService = useMemo(() => new CourseService(props.course.id), [props.course.id]);
   const relevantEvents = useMemo(() => {
     const yesterday = moment.utc().subtract(1, 'day');
@@ -48,7 +44,7 @@ export function SchedulePage(props: CoursePageProps) {
     setData(data);
 
     const distinctTags = Array.from(new Set(data.map(element => element.event.type)));
-    setTags(distinctTags);
+    setTypesFromBase(distinctTags);
   };
 
   useAsync(withLoading(loadData), [courseService]);
@@ -65,6 +61,11 @@ export function SchedulePage(props: CoursePageProps) {
 
   const toggleOldEvents = () => {
     setOldEventsHidden(!isOldEventsHidden);
+  };
+
+  const closeModal = async () => {
+    setEditableRecord(null);
+    setModalOpen(false);
   };
 
   const exportToCsv = () => {
@@ -111,6 +112,15 @@ export function SchedulePage(props: CoursePageProps) {
                 <Button onClick={importFromCsv} icon={<UploadOutlined />} />
               </Tooltip>
             </Col>
+            <Col>
+              <Button
+                type="primary"
+                icon={<PlusOutlined />}
+                onClick={() => {
+                  setModalOpen(true);
+                }}
+              />
+            </Col>
           </>
         )}
         <Col>
@@ -124,9 +134,9 @@ export function SchedulePage(props: CoursePageProps) {
         </Col>
         <Col>
           <UserSettings
-            tags={tags}
+            typesFromBase={typesFromBase}
             setStoredTagColors={setStoredTagColors}
-            storedTagColors={storedTagColors || {}}
+            storedTagColors={storedTagColors}
           />
         </Col>
       </Row>
@@ -136,19 +146,33 @@ export function SchedulePage(props: CoursePageProps) {
         isAdmin={props.session.isAdmin}
         courseId={props.course.id}
         refreshData={loadData}
-        storedTagColors={storedTagColors || {}}
+        storedTagColors={storedTagColors}
         alias={props.course.alias}
       />
+      {isModalOpen && (
+        <ModalFormEntity
+          visible={isModalOpen}
+          editableRecord={editableRecord}
+          handleCancel={closeModal}
+          courseId={props.course.id}
+          refreshData={loadData}
+        />
+      )}
     </PageLayout>
   );
 }
 
 const tasksToEvents = (tasks: CourseTaskDetails[]) => {
   return tasks.reduce((acc: Array<CourseEvent>, task: CourseTaskDetails) => {
-    if (task.type !== TaskTypes.test) {
+    if (task.type !== SPECIAL_TASK_TYPES.test) {
       acc.push(createCourseEventFromTask(task, task.type));
     }
-    acc.push(createCourseEventFromTask(task, task.type === TaskTypes.test ? TaskTypes.test : TaskTypes.deadline));
+    acc.push(
+      createCourseEventFromTask(
+        task,
+        task.type === SPECIAL_TASK_TYPES.test ? SPECIAL_TASK_TYPES.test : SPECIAL_TASK_TYPES.deadline,
+      ),
+    );
     return acc;
   }, []);
 };
@@ -156,16 +180,19 @@ const tasksToEvents = (tasks: CourseTaskDetails[]) => {
 const createCourseEventFromTask = (task: CourseTaskDetails, type: string): CourseEvent => {
   return {
     id: task.id,
-    dateTime: (type === TaskTypes.deadline ? task.studentEndDate : task.studentStartDate) || '',
+    dateTime: (type === SPECIAL_TASK_TYPES.deadline ? task.studentEndDate : task.studentStartDate) || '',
     event: {
       type: type,
       name: task.name,
       descriptionUrl: task.descriptionUrl,
+      id: task.taskId,
     },
     organizer: {
       githubId: task.taskOwner ? task.taskOwner.githubId : '',
     },
     isTask: true,
+    special: task.special,
+    duration: task.duration,
   } as CourseEvent;
 };
 

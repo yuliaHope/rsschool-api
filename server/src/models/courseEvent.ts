@@ -64,4 +64,7 @@ export class CourseEvent {
 
   @Column({ default: '' })
   special: string;
+
+  @Column({ nullable: true, type: 'int' })
+  duration: number | null;
 }

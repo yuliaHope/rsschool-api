@@ -16,12 +16,17 @@ import {
   renderTagWithStyle,
 } from 'components/Table';
 import { CourseEvent, CourseService } from 'services/course';
-import { ScheduleRow, TaskTypes } from './model';
+import { ScheduleRow } from './model';
 import EditableCell from './EditableCell';
 import FilterComponent from '../Table/FilterComponent';
 import Link from 'next/link';
+import { EventService } from 'services/event';
+import { Task, TaskService } from 'services/task';
 
 const { Text } = Typography;
+
+const eventService = new EventService();
+const taskService = new TaskService();
 
 type Props = {
   data: CourseEvent[];
@@ -160,7 +165,7 @@ export function TableView({ data, timeZone, isAdmin, courseId, refreshData, stor
   const courseService = useMemo(() => new CourseService(courseId), [courseId]);
   const distinctTags = Array.from(new Set(data.map(element => element.event.type)));
 
-  const isEditing = (record: CourseEvent) => record.id.toString() === editingKey;
+  const isEditing = (record: CourseEvent) => `${record.id}${record.event.type}${record.event.name}` === editingKey;
 
   const edit = (record: CourseEvent) => {
     form.setFieldsValue({
@@ -168,17 +173,22 @@ export function TableView({ data, timeZone, isAdmin, courseId, refreshData, stor
       dateTime: moment(record.dateTime),
       time: moment(record.dateTime),
       special: record.special ? record.special.split(',') : [],
-      duration: record.duration ? record.duration : '',
+      duration: record.duration ? Number(record.duration) : null,
     });
-    setEditingKey(record.id.toString());
+    setEditingKey(`${record.id}${record.event.type}${record.event.name}`);
   };
 
-  const handleDelete = async (id: number) => {
+  const handleDelete = async (id: number, isTask?: boolean) => {
     try {
-      await courseService.deleteCourseEvent(id);
+      if (isTask) {
+        await courseService.deleteCourseTask(id);
+      } else {
+        await courseService.deleteCourseEvent(id);
+      }
+
       await refreshData();
     } catch {
-      message.error('Failed to delete item. Please try later.');
+      message.error(`Failed to delete ${isTask ? 'task' : 'event'}. Please try later.`);
     }
   };
 
@@ -201,18 +211,24 @@ export function TableView({ data, timeZone, isAdmin, courseId, refreshData, stor
     setEditingKey('');
   };
 
-  const save = async (key: React.Key) => {
+  const save = async (id: number, isTask?: boolean) => {
     const updatedRow = (await form.validateFields()) as ScheduleRow;
-    const index = data.findIndex(item => key === item.id.toString());
+    const index = data.findIndex(item => id === item.id);
 
     if (index > -1) {
-      const editableEvent = data[index];
+      const editableEntity = data[index];
 
-      mergeWith(editableEvent, updatedRow);
-      editableEvent.special = updatedRow.special ? updatedRow.special.join(',') : '';
+      mergeWith(editableEntity, updatedRow);
+      editableEntity.special = updatedRow.special ? updatedRow.special.join(',') : '';
 
       try {
-        await courseService.updateCourseEvent(editableEvent.id, editableEvent);
+        if (isTask) {
+          await taskService.updateTask(editableEntity.event.id, getNewDataForUpdate(editableEntity) as Partial<Task>);
+          await courseService.updateCourseTask(editableEntity.id, getCourseTaskDataForUpdate(editableEntity));
+        } else {
+          await eventService.updateEvent(editableEntity.event.id, getNewDataForUpdate(editableEntity));
+          await courseService.updateCourseEvent(editableEntity.id, getCourseEventDataForUpdate(editableEntity));
+        }
         await refreshData();
       } catch {
         message.error('An error occurred. Please try later.');
@@ -239,7 +255,7 @@ export function TableView({ data, timeZone, isAdmin, courseId, refreshData, stor
               <a
                 onClick={event => {
                   event.stopPropagation();
-                  save(record.id.toString());
+                  save(record.id, record.isTask);
                 }}
                 style={{ marginRight: 8 }}
               >
@@ -262,10 +278,11 @@ export function TableView({ data, timeZone, isAdmin, courseId, refreshData, stor
               >
                 Edit
               </Button>
+
               <Popconfirm
                 title="Sure to delete?"
                 onConfirm={() => {
-                  handleDelete(record.id);
+                  handleDelete(record.id, record.isTask);
                 }}
               >
                 <Button type="link" style={{ padding: 0 }} disabled={editingKey !== ''}>
@@ -315,7 +332,7 @@ export function TableView({ data, timeZone, isAdmin, courseId, refreshData, stor
             cell: EditableCell,
           },
         }}
-        rowKey={record => (record.event.type === TaskTypes.deadline ? `${record.id}d` : record.id).toString()}
+        rowKey={({ event, id }) => `${id}${event.type}`}
         pagination={false}
         dataSource={listTasks}
         size="middle"
@@ -325,5 +342,45 @@ export function TableView({ data, timeZone, isAdmin, courseId, refreshData, stor
     </Form>
   );
 }
+
+const getCourseEventDataForUpdate = (entity: CourseEvent) => {
+  return {
+    dateTime: entity.dateTime,
+    organizerId: entity.organizerId || null,
+    place: entity.place || '',
+    special: entity.special || '',
+    duration: entity.duration || null,
+  };
+};
+
+const getCourseTaskDataForUpdate = (entity: CourseEvent) => {
+  const taskDate = entity.event.type !== 'deadline' ? 'studentStartDate' : 'studentEndDate';
+
+  const dataForUpdate = {
+    [taskDate]: entity.dateTime,
+    taskOwnerId: entity.organizer.id || null,
+    special: entity.special || '',
+    duration: entity.duration || null,
+  };
+
+  if (entity.event.type !== 'deadline') {
+    return { ...dataForUpdate, type: entity.event.type };
+  }
+
+  return dataForUpdate;
+};
+
+const getNewDataForUpdate = (entity: CourseEvent) => {
+  const dataForUpdate = {
+    name: entity.event.name,
+    descriptionUrl: entity.event.descriptionUrl || '',
+  };
+
+  if (entity.event.type !== 'deadline') {
+    return { ...dataForUpdate, type: entity.event.type };
+  }
+
+  return dataForUpdate;
+};
 
 export default TableView;

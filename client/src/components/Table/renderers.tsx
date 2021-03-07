@@ -8,7 +8,7 @@ import {
   QuestionCircleOutlined,
 } from '@ant-design/icons';
 import { Tag, Tooltip } from 'antd';
-import { getTagStyle } from '../UserSettings/userSettingsHandlers';
+import { getTagStyle } from '../Schedule/UserSettings/userSettingsHandlers';
 
 export function dateRenderer(value: string | null) {
   return value ? moment(value).format('YYYY-MM-DD') : '';
@@ -60,7 +60,7 @@ export function renderTag(value: number | string, color?: string) {
   );
 }
 
-export function renderTagWithStyle(tagName: string, storedTagColors: object) {
+export function renderTagWithStyle(tagName: string, storedTagColors?: object) {
   return (
     <Tag style={getTagStyle(tagName, storedTagColors)} key={tagName}>
       {tagName}
