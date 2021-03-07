@@ -9,7 +9,7 @@ type Props = {
 };
 
 const FilterComponent: React.FC<Props> = ({ hiddenColumnsRows, eventTypes, handleFilter }) => {
-  const columnsName: Array<string> = ['Type', 'Special', 'Url', 'Organizer', 'Place'];
+  const columnsName: Array<string> = ['Type', 'Special', 'Url', 'Duration', 'Organizer', 'Place'];
 
   return (
     <Space style={{ alignItems: 'flex-start' }}>
