@@ -3,7 +3,7 @@ import { Form, Input, InputNumber, DatePicker, TimePicker, Select } from 'antd';
 import { Rule } from 'antd/lib/form';
 import { UserSearch } from 'components/UserSearch';
 import { CourseEvent } from 'services/course';
-import { EVENT_TYPES, SPECIAL_EVENT_TAGS } from './model';
+import { EVENT_TYPES, SPECIAL_ENTITY_TAGS, TASK_TYPES } from './model';
 import { UserService } from 'services/user';
 
 const { Option } = Select;
@@ -29,6 +29,15 @@ const EditableCell: React.FC<EditableCellProps> = ({
   let inputNode;
   let rules: Rule = { type: 'string', required: false };
 
+  const typesList = record && record.isTask ? TASK_TYPES : EVENT_TYPES;
+  const types = typesList.map((tag: string) => {
+    return (
+      <Option key={tag} value={tag}>
+        {tag}
+      </Option>
+    );
+  });
+
   switch (title) {
     case 'Date':
       inputNode = <DatePicker style={{ minWidth: 120 }} />;
@@ -40,21 +49,15 @@ const EditableCell: React.FC<EditableCellProps> = ({
       break;
     case 'Type':
       inputNode = (
-        <Select style={{ minWidth: 120 }}>
-          {EVENT_TYPES.map(tag => {
-            return (
-              <Option key={tag} value={tag}>
-                {tag}
-              </Option>
-            );
-          })}
+        <Select style={{ minWidth: 120 }} disabled={record.event.type === 'deadline'}>
+          {types}
         </Select>
       );
       break;
     case 'Special':
       inputNode = (
         <Select mode="tags" style={{ minWidth: 100 }} tokenSeparators={[',']} allowClear>
-          {SPECIAL_EVENT_TAGS.map((tag: string) => (
+          {SPECIAL_ENTITY_TAGS.map((tag: string) => (
             <Option key={tag} value={tag}>
               {tag}
             </Option>
@@ -69,7 +72,11 @@ const EditableCell: React.FC<EditableCellProps> = ({
       break;
     case 'Organizer':
       inputNode = <UserSearch style={{ minWidth: 150 }} searchFn={loadUsers} />;
-      rules = { required: false, message: 'Please select a organizer' };
+      rules = { required: false, message: 'Please select an organizer' };
+      break;
+    case 'Place':
+      inputNode = <Input style={{ minWidth: 150 }} disabled={record.isTask} />;
+      rules = { type: 'string', required: false };
       break;
     default:
       inputNode = <Input style={{ minWidth: 150 }} />;

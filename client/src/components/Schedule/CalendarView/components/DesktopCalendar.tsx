@@ -1,18 +1,20 @@
 import React, { useState } from 'react';
-import { Calendar, Badge } from 'antd';
+import { Calendar, Badge, Typography } from 'antd';
 import { getMonthValue, getListData } from '../utils/filters';
 import { Scrollbars } from 'react-custom-scrollbars';
-import { ModalWindow } from './Modal';
+import ModalWindow from './ModalWindow';
 import { CourseEvent } from 'services/course';
 import { Moment } from 'moment';
+
+const { Title } = Typography;
 
 type Props = {
   data: CourseEvent[];
   timeZone: string;
+  storedTagColors?: object;
 };
 
-
-const DesktopCalendar: React.FC<Props> = ({ data, timeZone }) => {
+const DesktopCalendar: React.FC<Props> = ({ data, timeZone, storedTagColors }) => {
   const [modalWindowData, setModalWindowData] = useState<CourseEvent | null>(null);
   const [showWindow, setShowWindow] = useState<boolean>(false);
 
@@ -23,21 +25,21 @@ const DesktopCalendar: React.FC<Props> = ({ data, timeZone }) => {
   function showModalWindow(id: number) {
     setModalWindowData(() => {
       setShowWindow(true);
-      return data.filter((event) => event.id === id)[0];
+      return data.filter(event => event.id === id)[0];
     });
   }
 
   const dateCellRender = (date: unknown | Moment) => {
     return (
       <Scrollbars autoHide autoHideTimeout={500} autoHideDuration={200}>
-        <ul style={{padding: '5px'}}>
-          {getListData(date as unknown as Moment, data, timeZone).map((coloredEvent) => {
-            return(
+        <ul style={{ padding: '5px' }}>
+          {getListData((date as unknown) as Moment, data, timeZone, storedTagColors).map(coloredEvent => {
+            return (
               <li
                 style={{
                   border: `1px solid ${coloredEvent.color}`,
                   borderRadius: '5px',
-                  backgroundColor: `${coloredEvent.color}50`,
+                  backgroundColor: `${coloredEvent.color}10`,
                   listStyleType: 'none',
                   overflowWrap: 'anywhere',
                   marginBottom: '5px',
@@ -48,34 +50,31 @@ const DesktopCalendar: React.FC<Props> = ({ data, timeZone }) => {
               >
                 <Badge color={coloredEvent.color} text={coloredEvent.name} />
               </li>
-          )})}
+            );
+          })}
         </ul>
       </Scrollbars>
     );
-  }
+  };
 
   const monthCellRender = (date: unknown | Moment) => {
-    const num = getMonthValue(date as unknown as Moment, data, timeZone);
+    const num = getMonthValue((date as unknown) as Moment, data, timeZone);
 
-    return !!num && (
-      <div >
-        <span>Number of events</span>
-        <section>{num}</section>
-      </div>
-    );
-  }
-
-
+    return !!num && <Title level={5} style={{ textAlign: 'center' }}>{`Events & tasks: ${num}.`}</Title>;
+  };
 
   return (
     <div className="calendar-container">
-      { modalWindowData &&
-        <ModalWindow isOpen={showWindow} dataEvent={modalWindowData} handleOnClose={handleOnClose} timeZone={timeZone}/>
-      }
-      <Calendar
-        dateCellRender={dateCellRender}
-        monthCellRender={monthCellRender}
-      />
+      {modalWindowData && (
+        <ModalWindow
+          isOpen={showWindow}
+          dataEvent={modalWindowData}
+          handleOnClose={handleOnClose}
+          timeZone={timeZone}
+          storedTagColors={storedTagColors}
+        />
+      )}
+      <Calendar dateCellRender={dateCellRender} monthCellRender={monthCellRender} />
     </div>
   );
 };
