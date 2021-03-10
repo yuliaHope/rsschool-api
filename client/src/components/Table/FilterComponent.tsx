@@ -5,15 +5,15 @@ import { COLUMNS_TYPES } from 'components/Schedule/model';
 
 type Props = {
   handleFilter: (event: CheckboxChangeEvent) => void;
-  hiddenColumnsRows: Array<string>;
+  hidenColumnsAndTypes: Array<string>;
   eventTypes: Array<string>;
 };
 
-const FilterComponent: React.FC<Props> = ({ hiddenColumnsRows, eventTypes, handleFilter }) => {
-  localStorage.setItem('settingsTypesAndColumns', JSON.stringify(hiddenColumnsRows));
+const FilterComponent: React.FC<Props> = ({ hidenColumnsAndTypes, eventTypes, handleFilter }) => {
+  // localStorage.setItem('settingsTypesAndColumns', JSON.stringify(hiddenColumnsRows));
   const renderColumns = COLUMNS_TYPES.map((el, ind) => {
     return (
-      <Checkbox key={`${ind}_${el}`} value={el} checked={!hiddenColumnsRows.includes(el)} onChange={handleFilter}>
+      <Checkbox key={`${ind}_${el}`} value={el} checked={!hidenColumnsAndTypes.includes(el)} onChange={handleFilter}>
         {el}
       </Checkbox>
     );
@@ -21,7 +21,7 @@ const FilterComponent: React.FC<Props> = ({ hiddenColumnsRows, eventTypes, handl
 
   const renderTypes = eventTypes.map((el, ind) => {
     return (
-      <Checkbox key={`${ind}_${el}`} value={el} checked={!hiddenColumnsRows.includes(el)} onChange={handleFilter}>
+      <Checkbox key={`${ind}_${el}`} value={el} checked={!hidenColumnsAndTypes.includes(el)} onChange={handleFilter}>
         {el}
       </Checkbox>
     );

@@ -22,6 +22,7 @@ import FilterComponent from '../Table/FilterComponent';
 import Link from 'next/link';
 import { EventService } from 'services/event';
 import { Task, TaskService } from 'services/task';
+import { useLocalStorage } from 'react-use';
 
 const { Text } = Typography;
 
@@ -47,7 +48,7 @@ const styles = {
 
 const getColumns = (
   timeZone: string,
-  hiddenColumnsRows: Array<string>,
+  hidenColumnsAndTypes: Array<string> = [],
   handleFilter: (event: CheckboxChangeEvent) => void,
   storedTagColors: object,
   distinctTags: Array<string>,
@@ -60,7 +61,7 @@ const getColumns = (
         overlay={() => (
           <FilterComponent
             eventTypes={distinctTags}
-            hiddenColumnsRows={hiddenColumnsRows}
+            hidenColumnsAndTypes={hidenColumnsAndTypes}
             handleFilter={handleFilter}
           />
         )}
@@ -161,9 +162,7 @@ const getColumns = (
 export function TableView({ data, timeZone, isAdmin, courseId, refreshData, storedTagColors, alias }: Props) {
   const [form] = Form.useForm();
   const [editingKey, setEditingKey] = useState('');
-  const [hiddenColumnsRows, setHiddenColumnsRows] = useState<Array<string>>(
-    JSON.parse(localStorage.getItem('settingsTypesAndColumns') || '[]'),
-  );
+  const [hidenColumnsAndTypes, setHidenColumnsAndTypes] = useLocalStorage<string[]>('settingsTypesAndColumns', []);
   const courseService = useMemo(() => new CourseService(courseId), [courseId]);
   const distinctTags = Array.from(new Set(data.map(element => element.event.type)));
 
@@ -196,16 +195,12 @@ export function TableView({ data, timeZone, isAdmin, courseId, refreshData, stor
 
   const handleFilter = (event: CheckboxChangeEvent) => {
     const { value, checked } = event.target;
-    if (checked && hiddenColumnsRows.includes(value)) {
-      setHiddenColumnsRows((prevState: Array<string>) => {
-        const newArr = prevState.filter(el => el !== value);
-        return newArr;
-      });
+    if (checked && hidenColumnsAndTypes && hidenColumnsAndTypes.includes(value)) {
+      const filteredTypesAndColumns = hidenColumnsAndTypes.filter(el => el !== value);
+      setHidenColumnsAndTypes(filteredTypesAndColumns);
     }
-    if (!checked && !hiddenColumnsRows.includes(value)) {
-      setHiddenColumnsRows((prevState: Array<string>) => {
-        return [...prevState, value];
-      });
+    if (!checked && hidenColumnsAndTypes && !hidenColumnsAndTypes.includes(value)) {
+      setHidenColumnsAndTypes([...hidenColumnsAndTypes, value]);
     }
   };
 
@@ -298,17 +293,20 @@ export function TableView({ data, timeZone, isAdmin, courseId, refreshData, stor
     ];
   };
 
-  const listTasks = data.filter(
-    element => element?.event.type && !hiddenColumnsRows.includes(element.event.type.toString()),
+  const filteredData = data.filter(
+    element =>
+      element?.event.type && hidenColumnsAndTypes && !hidenColumnsAndTypes.includes(element.event.type.toString()),
   );
   const sortedColumns = getColumns(
     timeZone,
-    hiddenColumnsRows,
+    hidenColumnsAndTypes,
     handleFilter,
     storedTagColors,
     distinctTags,
     alias,
-  ).filter(element => element?.title && !hiddenColumnsRows.includes(element.title.toString()));
+  ).filter(
+    element => element?.title && hidenColumnsAndTypes && !hidenColumnsAndTypes.includes(element.title.toString()),
+  );
   const columns = [...sortedColumns, ...getAdminColumn(isAdmin)] as ColumnsType<CourseEvent>;
 
   const mergedColumns = columns.map((col: any) => {
@@ -336,7 +334,7 @@ export function TableView({ data, timeZone, isAdmin, courseId, refreshData, stor
         }}
         rowKey={({ event, id }) => `${id}${event.type}`}
         pagination={false}
-        dataSource={listTasks}
+        dataSource={filteredData}
         size="middle"
         columns={mergedColumns}
         rowClassName="editable-row"
