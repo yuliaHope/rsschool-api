@@ -1,5 +1,6 @@
 import { Col, Row, Select, Tooltip, Button, Form, Upload, message } from 'antd';
 import { UploadFile } from 'antd/lib/upload/interface';
+import { RcFile } from 'antd/lib/upload';
 import { EyeOutlined, EyeInvisibleOutlined, DownloadOutlined, UploadOutlined, PlusOutlined } from '@ant-design/icons';
 import { withSession, PageLayout } from 'components';
 import { TableView, CalendarView, ListView } from 'components/Schedule';
@@ -34,6 +35,7 @@ export function SchedulePage(props: CoursePageProps) {
   const [isOldEventsHidden, setOldEventsHidden] = useLocalStorage<boolean>(LOCAL_HIDE_OLD_EVENTS, false);
   const [isModalOpen, setModalOpen] = useState(false);
   const [editableRecord, setEditableRecord] = useState(null);
+  const [fileList, setFileList] = useState<RcFile[]>([]);
   const courseService = useMemo(() => new CourseService(props.course.id), [props.course.id]);
   const relevantEvents = useMemo(() => {
     const yesterday = moment.utc().subtract(1, 'day');
@@ -80,8 +82,13 @@ export function SchedulePage(props: CoursePageProps) {
     try {
       const results = await parseFiles(values.files);
       const submitResults = await uploadResults(courseService, results);
-      message.success(submitResults.toString());
-      // message.success('CSV data has been submitted.');
+
+      if (submitResults.toString().includes('successfully')) {
+        message.success(submitResults);
+        setFileList([]);
+      } else {
+        message.error(submitResults);
+      }
     } catch (e) {
       if (e.message.match(/^Incorrect data/)) {
         message.error(e.message);
@@ -89,6 +96,16 @@ export function SchedulePage(props: CoursePageProps) {
         message.error('An error occured. Please try later.');
       }
     }
+  };
+
+  const onRemove = (_: UploadFile<any>) => {
+    setFileList([]);
+  };
+
+  const beforeUpload = (file: RcFile) => {
+    setFileList([...fileList, file]);
+
+    return false;
   };
 
   return (
@@ -125,18 +142,18 @@ export function SchedulePage(props: CoursePageProps) {
             <Form form={form} onFinish={handleSubmit} layout="inline">
               <Col>
                 <Form.Item label="" name="files" rules={[{ required: true, message: 'Please select csv-file' }]}>
-                  <Upload fileList={[]}>
-                    <Button>
-                      <UploadOutlined /> Select files
-                    </Button>
+                  <Upload onRemove={onRemove} beforeUpload={beforeUpload} fileList={fileList}>
+                    <Button icon={<UploadOutlined />} />
                   </Upload>
                 </Form.Item>
               </Col>
-              <Col>
-                <Button type="primary" htmlType="submit" style={{ marginRight: '1.5em' }}>
-                  import CSV
-                </Button>
-              </Col>
+              {fileList.length > 0 && (
+                <Col>
+                  <Button type="primary" htmlType="submit" style={{ marginRight: '1.5em' }}>
+                    Import CSV
+                  </Button>
+                </Col>
+              )}
             </Form>
             <Col>
               <Button
@@ -258,6 +275,7 @@ const parseFiles = async (incomingFiles: any) => {
       }
       return {
         entityType: item.entityType as string,
+        templateId: item.templateId as string,
         id: item.id as string,
         startDate: item.startDate as string,
         endDate: item.endDate as string,
@@ -289,6 +307,7 @@ const uploadResults = async (
   }[],
 ) => {
   const resultsNewTasks = await courseService.postMultipleEntities(data as Partial<CourseEvent & CourseTask>);
+
   return resultsNewTasks;
 };
 
