@@ -1,6 +1,7 @@
-import React from 'react';
+import React, { memo } from 'react';
 import { Space, Checkbox } from 'antd';
 import { CheckboxChangeEvent } from 'antd/lib/checkbox';
+import { COLUMNS_TYPES } from 'components/Schedule/model';
 
 type Props = {
   handleFilter: (event: CheckboxChangeEvent) => void;
@@ -9,39 +10,37 @@ type Props = {
 };
 
 const FilterComponent: React.FC<Props> = ({ hiddenColumnsRows, eventTypes, handleFilter }) => {
-  const columnsName: Array<string> = ['Type', 'Special', 'Url', 'Duration', 'Organizer', 'Place'];
+  localStorage.setItem('settingsTypesAndColumns', JSON.stringify(hiddenColumnsRows));
+  const renderColumns = COLUMNS_TYPES.map((el, ind) => {
+    return (
+      <Checkbox key={`${ind}_${el}`} value={el} checked={!hiddenColumnsRows.includes(el)} onChange={handleFilter}>
+        {el}
+      </Checkbox>
+    );
+  });
+
+  const renderTypes = eventTypes.map((el, ind) => {
+    return (
+      <Checkbox key={`${ind}_${el}`} value={el} checked={!hiddenColumnsRows.includes(el)} onChange={handleFilter}>
+        {el}
+      </Checkbox>
+    );
+  });
 
   return (
     <Space style={{ alignItems: 'flex-start' }}>
       <Space direction="vertical">
         <span style={{ fontWeight: 'bold' }}>Columns</span>
-        {columnsName.map((el, ind) => {
-          return (
-            <Checkbox key={`${ind}_${el}`} value={el} checked={!hiddenColumnsRows.includes(el)} onChange={handleFilter}>
-              {el}
-            </Checkbox>
-          );
-        })}
+        {renderColumns}
       </Space>
       {eventTypes.length !== 0 ? (
         <Space direction="vertical">
-          <span style={{ fontWeight: 'bold' }}>Events</span>
-          {eventTypes.map((el, ind) => {
-            return (
-              <Checkbox
-                key={`${ind}_${el}`}
-                value={el}
-                checked={!hiddenColumnsRows.includes(el)}
-                onChange={handleFilter}
-              >
-                {el}
-              </Checkbox>
-            );
-          })}
+          <span style={{ fontWeight: 'bold' }}>Types</span>
+          {renderTypes}
         </Space>
       ) : null}
     </Space>
   );
 };
 
-export default FilterComponent;
+export default memo(FilterComponent);

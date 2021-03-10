@@ -161,7 +161,9 @@ const getColumns = (
 export function TableView({ data, timeZone, isAdmin, courseId, refreshData, storedTagColors, alias }: Props) {
   const [form] = Form.useForm();
   const [editingKey, setEditingKey] = useState('');
-  const [hiddenColumnsRows, setHiddenColumnsRows] = useState<Array<string>>([]);
+  const [hiddenColumnsRows, setHiddenColumnsRows] = useState<Array<string>>(
+    JSON.parse(localStorage.getItem('settingsTypesAndColumns') || '[]'),
+  );
   const courseService = useMemo(() => new CourseService(courseId), [courseId]);
   const distinctTags = Array.from(new Set(data.map(element => element.event.type)));
 
