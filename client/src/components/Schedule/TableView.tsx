@@ -289,7 +289,7 @@ export function TableView({ data, timeZone, isAdmin, courseId, refreshData, stor
 const getCourseEventDataForUpdate = (entity: CourseEvent) => {
   return {
     dateTime: entity.dateTime,
-    organizerId: entity.organizerId || null,
+    organizerId: entity.organizer ? entity.organizer.githubId : null,
     place: entity.place || '',
     special: entity.special || '',
     duration: entity.duration || null,
@@ -301,7 +301,7 @@ const getCourseTaskDataForUpdate = (entity: CourseEvent) => {
 
   const dataForUpdate = {
     [taskDate]: entity.dateTime,
-    taskOwnerId: entity.organizer.id || null,
+    taskOwnerId: entity.organizer ? entity.organizer.githubId : null,
     special: entity.special || '',
     duration: entity.duration || null,
   };
