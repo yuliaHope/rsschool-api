@@ -212,6 +212,8 @@ export function TableView({ data, timeZone, isAdmin, courseId, refreshData, stor
     const updatedRow = (await form.validateFields()) as ScheduleRow;
     const index = data.findIndex(item => id === item.id);
 
+    updatedRow.organizer = updatedRow.organizer && updatedRow.organizer.githubId ? updatedRow.organizer : null;
+
     if (index > -1) {
       const editableEntity = data[index];
 
