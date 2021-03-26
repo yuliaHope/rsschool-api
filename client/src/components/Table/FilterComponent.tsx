@@ -2,6 +2,7 @@ import React, { memo } from 'react';
 import { Space, Checkbox, Button } from 'antd';
 import { CheckboxChangeEvent } from 'antd/lib/checkbox';
 import { COLUMNS_TYPES } from 'components/Schedule/model';
+import { CheckSquareOutlined } from '@ant-design/icons';
 
 type Props = {
   handleFilter: (event: CheckboxChangeEvent) => void;
@@ -46,8 +47,13 @@ const FilterComponent: React.FC<Props> = ({
           </Space>
         ) : null}
       </Space>
-      <Button style={{ marginTop: '10px' }} onClick={() => setHidenColumnsAndTypes([])}>
-        Reset
+      <Button
+        style={{ marginTop: '10px' }}
+        icon={<CheckSquareOutlined />}
+        type="link"
+        onClick={() => setHidenColumnsAndTypes([])}
+      >
+        Select all
       </Button>
     </Space>
   );
