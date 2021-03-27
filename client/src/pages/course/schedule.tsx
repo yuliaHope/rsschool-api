@@ -19,6 +19,7 @@ import ModalFormEntity from '../../components/Schedule/ModalFormEntity';
 import moment from 'moment-timezone';
 import { isUndefined } from 'lodash';
 import csv from 'csvtojson';
+import Router from 'next/router';
 
 const { Option } = Select;
 const LOCAL_VIEW_MODE = 'scheduleViewMode';
@@ -89,6 +90,8 @@ export function SchedulePage(props: CoursePageProps) {
       } else {
         message.error(submitResults);
       }
+
+      Router.reload();
     } catch (e) {
       if (e.message.match(/^Incorrect data/)) {
         message.error(e.message);
