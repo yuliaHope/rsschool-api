@@ -1,12 +1,12 @@
 import * as React from 'react';
-import Document, { Head, Main, NextScript } from 'next/document';
+import Document, { Html, Head, Main, NextScript } from 'next/document';
 
 export default class extends Document {
   enableGA = process.env.NODE_ENV === 'production';
 
   render() {
     return (
-      <html lang="en">
+      <Html lang="en">
         <Head>
           <link rel="shortcut icon" href="https://rs.school/favicon.ico" />
           <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" />
@@ -18,7 +18,7 @@ export default class extends Document {
           <Main />
           <NextScript />
         </body>
-      </html>
+      </Html>
     );
   }
 }
