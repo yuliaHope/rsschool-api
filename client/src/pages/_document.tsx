@@ -9,7 +9,6 @@ export default class extends Document {
       <Html lang="en">
         <Head>
           <link rel="shortcut icon" href="https://rs.school/favicon.ico" />
-          <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" />
 
           {this.enableGA && <script async src="https://www.googletagmanager.com/gtag/js?id=UA-55428637-3" />}
           {this.enableGA && <script dangerouslySetInnerHTML={{ __html: gaJsCode }} />}

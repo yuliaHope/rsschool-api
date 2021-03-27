@@ -13,6 +13,8 @@ class RsSchoolApp extends App {
       <>
         <Head>
           <title>App / The Rolling Scopes School</title>
+          <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" />
+
         </Head>
         <Component {...pageProps} />
       </>
