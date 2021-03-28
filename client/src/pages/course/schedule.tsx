@@ -19,7 +19,6 @@ import ModalFormEntity from '../../components/Schedule/ModalFormEntity';
 import moment from 'moment-timezone';
 import { isUndefined } from 'lodash';
 import csv from 'csvtojson';
-import Router from 'next/router';
 
 const { Option } = Select;
 const LOCAL_VIEW_MODE = 'scheduleViewMode';
@@ -91,7 +90,7 @@ export function SchedulePage(props: CoursePageProps) {
         message.error(submitResults);
       }
 
-      Router.reload();
+      await loadData();
     } catch (e) {
       if (e.message.match(/^Incorrect data/)) {
         message.error(e.message);
@@ -138,7 +137,7 @@ export function SchedulePage(props: CoursePageProps) {
         {props.session.isAdmin && (
           <>
             <Col>
-              <Tooltip title="Export CSV" mouseEnterDelay={1}>
+              <Tooltip title="Export schedule" mouseEnterDelay={1}>
                 <Button onClick={exportToCsv} icon={<DownloadOutlined />} />
               </Tooltip>
             </Col>
@@ -146,7 +145,9 @@ export function SchedulePage(props: CoursePageProps) {
               <Col>
                 <Form.Item label="" name="files" rules={[{ required: true, message: 'Please select csv-file' }]}>
                   <Upload onRemove={onRemove} beforeUpload={beforeUpload} fileList={fileList}>
-                    <Button icon={<UploadOutlined />} />
+                    <Tooltip title="Import schedule" mouseEnterDelay={1}>
+                      <Button icon={<UploadOutlined />} />
+                    </Tooltip>
                   </Upload>
                 </Form.Item>
               </Col>
@@ -159,13 +160,15 @@ export function SchedulePage(props: CoursePageProps) {
               )}
             </Form>
             <Col>
-              <Button
-                type="primary"
-                icon={<PlusOutlined />}
-                onClick={() => {
-                  setModalOpen(true);
-                }}
-              />
+              <Tooltip title="Add new" mouseEnterDelay={1}>
+                <Button
+                  type="primary"
+                  icon={<PlusOutlined />}
+                  onClick={() => {
+                    setModalOpen(true);
+                  }}
+                />
+              </Tooltip>
             </Col>
           </>
         )}

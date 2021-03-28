@@ -23,6 +23,7 @@ import Link from 'next/link';
 import { EventService } from 'services/event';
 import { Task, TaskService } from 'services/task';
 import { useLocalStorage } from 'react-use';
+import { DEFAULT_COLORS } from './UserSettings/userSettingsHandlers';
 
 const { Text } = Typography;
 
@@ -35,7 +36,7 @@ type Props = {
   isAdmin: boolean;
   courseId: number;
   refreshData: Function;
-  storedTagColors: object;
+  storedTagColors?: object;
   alias: string;
 };
 
@@ -159,7 +160,15 @@ const getColumns = (
   },
 ];
 
-export function TableView({ data, timeZone, isAdmin, courseId, refreshData, storedTagColors, alias }: Props) {
+export function TableView({
+  data,
+  timeZone,
+  isAdmin,
+  courseId,
+  refreshData,
+  storedTagColors = DEFAULT_COLORS,
+  alias,
+}: Props) {
   const [form] = Form.useForm();
   const [editingKey, setEditingKey] = useState('');
   const [hidenColumnsAndTypes, setHidenColumnsAndTypes] = useLocalStorage<string[]>('settingsTypesAndColumns', []);
