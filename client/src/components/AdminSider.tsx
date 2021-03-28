@@ -9,6 +9,7 @@ import {
   HomeOutlined,
 } from '@ant-design/icons';
 import { Layout, Menu } from 'antd';
+import Link from 'next/link';
 import { useState } from 'react';
 
 const { Sider } = Layout;
@@ -33,49 +34,61 @@ export function AdminSider(props: Props) {
 
       <Menu theme="dark" mode="inline">
         <Menu.Item key="1">
-          <a href="/">
-            <HomeOutlined />
-            <span>Main</span>
-          </a>
+          <Link href="/">
+            <a>
+              <HomeOutlined />
+              <span>Main</span>
+            </a>
+          </Link>
         </Menu.Item>
 
         {props.isAdmin ? (
           <Menu.Item key="2">
-            <a href="/admin/courses">
-              <GlobalOutlined />
-              <span>Courses</span>
-            </a>
+            <Link href="/admin/courses">
+              <a>
+                <GlobalOutlined />
+                <span>Courses</span>
+              </a>
+            </Link>
           </Menu.Item>
         ) : null}
 
         <Menu.Item key="3">
-          <a href="/admin/tasks">
-            <QuestionOutlined />
-            <span>Tasks</span>
-          </a>
+          <Link href="/admin/tasks">
+            <a>
+              <QuestionOutlined />
+              <span>Tasks</span>
+            </a>
+          </Link>
         </Menu.Item>
 
         <Menu.Item key="4">
-          <a href="/admin/events">
-            <BellOutlined />
-            <span>Events</span>
-          </a>
+          <Link href="/admin/events">
+            <a>
+              <BellOutlined />
+              <span>Events</span>
+            </a>
+          </Link>
         </Menu.Item>
 
         {props.isAdmin ? (
           <Menu.Item key="5">
-            <a href="/admin/users">
-              <TeamOutlined />
-              <span>Users</span>
-            </a>
+            <Link href="/admin/users">
+              <a>
+                <TeamOutlined />
+                <span>Users</span>
+              </a>
+            </Link>
           </Menu.Item>
         ) : null}
         {props.isAdmin || props.isCoursePowerUser ? (
           <Menu.Item key="7">
-            <a href="/admin/mentor-registry">
-              <IdcardFilled />
-              <span>Mentor Registry</span>
-            </a>
+            <Link href="/admin/mentor-registry">
+              <a>
+                <IdcardFilled />
+                <span>Mentor Registry</span>
+              </a>
+            </Link>
           </Menu.Item>
         ) : null}
       </Menu>

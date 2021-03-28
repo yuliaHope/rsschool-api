@@ -5,6 +5,7 @@ import { Rating } from 'components';
 import { StageInterviewDetailedFeedback } from '../../../../common/models/profile';
 import { CODING_LEVELS, SKILLS_LEVELS, SKILL_NAME } from 'services/reference-data/stageInterview';
 import { ENGLISH_LEVELS } from 'services/reference-data';
+import Link from 'next/link';
 
 const { Text } = Typography;
 
@@ -60,7 +61,7 @@ class PreScreeningIviewModal extends React.PureComponent<Props> {
           </p>
         ) : null}
         <p style={{ marginBottom: 20 }}>
-          Interviewer: <a href={`/profile?githubId=${interviewer.githubId}`}>{interviewer.name}</a>
+          Interviewer: <Link href={`/profile?githubId=${interviewer.githubId}`}>{interviewer.name}</Link>
         </p>
         {comment && (
           <p style={{ marginBottom: 20 }}>

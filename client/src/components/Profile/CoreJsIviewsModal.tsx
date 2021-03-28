@@ -2,6 +2,7 @@ import * as React from 'react';
 // import isEqual from 'lodash/isEqual'
 import { CoreJsInterviewData } from './CoreJsIviewsCard';
 import { Modal, Table, Typography, Tag } from 'antd';
+import Link from 'next/link';
 
 const { Text } = Typography;
 
@@ -29,7 +30,7 @@ class CoreJsIviewsModal extends React.PureComponent<Props> {
           Score: <Text mark>{score}</Text>
         </p>
         <p style={{ marginBottom: 20 }}>
-          Interviewer: <a href={`/profile?githubId=${interviewer.githubId}`}>{interviewer.name}</a>
+          Interviewer: <Link href={`/profile?githubId=${interviewer.githubId}`}>{interviewer.name}</Link>
         </p>
         {comment && (
           <p style={{ marginBottom: 20 }}>

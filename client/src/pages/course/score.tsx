@@ -3,6 +3,7 @@ import { Button, Layout, Popover, Row, Spin, Switch, Table, Typography } from 'a
 import { GithubAvatar, Header, withSession } from 'components';
 import { dateTimeRenderer, dateRenderer, getColumnSearchProps } from 'components/Table';
 import withCourseData from 'components/withCourseData';
+import Link from 'next/link';
 import { useEffect, useMemo, useState, useCallback } from 'react';
 import { CourseService, StudentScore, CourseTask } from 'services/course';
 import { CoursePageProps } from 'services/models';
@@ -188,7 +189,7 @@ function renderTable(
           dataIndex: 'name',
           width: 150,
           sorter: 'name',
-          render: (value: any, record: StudentScore) => <a href={`/profile?githubId=${record.githubId}`}>{value}</a>,
+          render: (value: any, record: StudentScore) => <Link href={`/profile?githubId=${record.githubId}`}>{value}</Link>,
           ...getColumnSearchProps('name'),
         },
         {
@@ -232,7 +233,7 @@ function renderTable(
           dataIndex: ['mentor', 'githubId'],
           width: 150,
           sorter: 'mentor',
-          render: (value: string) => <a href={`/profile?githubId=${value}`}>{value}</a>,
+          render: (value: string) => <Link href={`/profile?githubId=${value}`}>{value}</Link>,
           ...getColumnSearchProps('mentor.githubId'),
         },
       ]}

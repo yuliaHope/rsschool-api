@@ -2,6 +2,7 @@ import { useState, useMemo } from 'react';
 import { Button, Col, Input, List, Row, Layout, Form } from 'antd';
 import { GithubAvatar, Header, Session, withSession, AdminSider } from 'components';
 import { UserService, UserFull } from 'services/user';
+import Link from 'next/link';
 
 const { Content } = Layout;
 type Props = { session: Session };
@@ -52,7 +53,7 @@ function Page(props: Props) {
                       <List.Item>
                         <List.Item.Meta
                           avatar={<GithubAvatar size={48} githubId={user.githubId} />}
-                          title={<a href={`/profile?githubId=${user.githubId}`}>{user.githubId}</a>}
+                          title={<Link href={`/profile?githubId=${user.githubId}`}>{user.githubId}</Link>}
                           description={
                             <div>
                               <div>{user.name}</div>

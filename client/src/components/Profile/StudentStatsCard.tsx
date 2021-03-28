@@ -12,6 +12,7 @@ import { BookOutlined, FullscreenOutlined, SafetyCertificateTwoTone } from '@ant
 import { CourseService } from '../../services/course';
 import { WarningTwoTone } from '@ant-design/icons';
 import { CSSProperties } from 'react';
+import Link from 'next/link';
 
 const { Text, Paragraph } = Typography;
 
@@ -204,14 +205,14 @@ class StudentStatsCard extends React.Component<Props, State> {
                       {certificateId && (
                         <p style={{ fontSize: 16, marginBottom: 5 }}>
                           <SafetyCertificateTwoTone twoToneColor="#52c41a" />{' '}
-                          <a target="__blank" href={`/certificate/${certificateId}`}>
-                            Certificate
-                          </a>
+                          <Link href={`/certificate/${certificateId}`}>
+                            <a target="_blank">Certificate</a>
+                          </Link>
                         </p>
                       )}
                       {mentor.githubId && (
                         <p style={{ fontSize: 12, marginBottom: 5 }}>
-                          Mentor: <a href={`/profile?githubId=${mentor.githubId}`}>{mentor.name}</a>
+                          Mentor: <Link href={`/profile?githubId=${mentor.githubId}`}>{mentor.name}</Link>
                         </p>
                       )}
                       {position && (

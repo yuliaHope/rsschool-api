@@ -1,6 +1,7 @@
 import * as React from 'react';
 import { StudentStats } from '../../../../common/models/profile';
 import { Modal, Table, Typography, Progress, Row, Col } from 'antd';
+import Link from 'next/link';
 
 const { Text } = Typography;
 
@@ -41,7 +42,7 @@ class StudentStatsModal extends React.PureComponent<Props> {
           <Col>
             {mentor.githubId && (
               <p style={{ marginBottom: 5 }}>
-                Mentor: <a href={`/profile?githubId=${mentor.githubId}`}>{mentor.name}</a>
+                Mentor: <Link href={`/profile?githubId=${mentor.githubId}`}>{mentor.name}</Link>
               </p>
             )}
             {position && (

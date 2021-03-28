@@ -5,6 +5,7 @@ import { Modal, Avatar, Typography, Tag, Row, Col } from 'antd';
 const { Text } = Typography;
 
 import { GithubOutlined, LockFilled } from '@ant-design/icons';
+import Link from 'next/link';
 
 type Props = {
   stats: MentorStats;
@@ -42,7 +43,7 @@ class MentorStatsModal extends React.Component<Props> {
                         style={{ marginRight: 24 }}
                       />
                       <Text strong>
-                        <a href={profile}>{name}</a>
+                        <Link href={profile}>{name}</Link>
                       </Text>
                     </div>
                     <p style={{ marginBottom: 5 }}>

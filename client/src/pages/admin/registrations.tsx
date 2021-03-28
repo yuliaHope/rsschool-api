@@ -5,6 +5,7 @@ import { AdminSider, GithubUserLink, Header } from 'components';
 import { stringSorter } from 'components/Table';
 import withCourses from 'components/withCourses';
 import withSession, { Session } from 'components/withSession';
+import Link from 'next/link';
 import { useState } from 'react';
 import { formatMonthFriendly } from 'services/formatter';
 import { Course } from 'services/models';
@@ -192,7 +193,7 @@ function Page(props: Props) {
                       key: 'lastName',
                       width: 150,
                       sorter: stringSorter('lastName'),
-                      render: (_: any, record: Registration) => <a href={record.user.profileUrl}>{record.user.name}</a>,
+                      render: (_: any, record: Registration) => <Link href={record.user.profileUrl}>{record.user.name}</Link>,
                     },
                     {
                       title: 'Github',
