@@ -50,6 +50,7 @@ const getColumns = (
   timeZone: string,
   hidenColumnsAndTypes: Array<string> = [],
   handleFilter: (event: CheckboxChangeEvent) => void,
+  setHidenColumnsAndTypes: (e: Array<string>) => void,
   storedTagColors: object,
   distinctTags: Array<string>,
   alias: string,
@@ -63,6 +64,7 @@ const getColumns = (
             eventTypes={distinctTags}
             hidenColumnsAndTypes={hidenColumnsAndTypes}
             handleFilter={handleFilter}
+            setHidenColumnsAndTypes={setHidenColumnsAndTypes}
           />
         )}
         placement="bottomRight"
@@ -301,6 +303,7 @@ export function TableView({ data, timeZone, isAdmin, courseId, refreshData, stor
     timeZone,
     hidenColumnsAndTypes,
     handleFilter,
+    setHidenColumnsAndTypes,
     storedTagColors,
     distinctTags,
     alias,
