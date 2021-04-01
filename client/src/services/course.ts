@@ -54,6 +54,7 @@ export interface CourseTaskDetails extends CourseTask {
   description: string | null;
   taskResultCount: number;
   taskOwner: { id: number; githubId: string; name: string } | null;
+  pairsCount?: number;
 }
 
 export interface CourseEvent {
