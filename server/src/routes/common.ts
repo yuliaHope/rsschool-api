@@ -92,3 +92,41 @@ export const createDisableRoute = <T extends ObjectType<{ disabled: boolean }>>(
     setResponse(ctx, BAD_REQUEST, { message: e.message });
   }
 };
+
+
+export const createMultiplePostRoute = <T extends ObjectType<T>>(entity: T, logger?: ILogger) => async (
+  ctx: Router.RouterContext,
+) => {
+  const data = ctx.request.body;
+
+  data.forEach(async (someEntity: any) => {
+    try {
+      const result = await getRepository(entity).insert(someEntity);
+      setResponse(ctx, OK, result);
+    } catch (e) {
+      if (logger) {
+        logger.error(e.message);
+      }
+      setResponse(ctx, BAD_REQUEST, { message: e.message });
+    }
+  });
+};
+
+export const createMultiplePutRoute = <T extends ObjectType<T>>(entity: T, logger?: ILogger) => async (
+  ctx: Router.RouterContext,
+) => {
+  const data = ctx.request.body;
+  
+
+  data.forEach(async (someEntity: any) => {
+     try {
+      const result = await getRepository(entity).update(someEntity.id, someEntity);
+      setResponse(ctx, OK, result);
+    } catch (e) {
+      if (logger) {
+         logger.error(e.message);
+      }
+      setResponse(ctx, BAD_REQUEST, { message: e.message });
+    }
+  });
+};

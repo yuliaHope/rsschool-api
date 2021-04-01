@@ -23,6 +23,7 @@ import Link from 'next/link';
 import { EventService } from 'services/event';
 import { Task, TaskService } from 'services/task';
 import { useLocalStorage } from 'react-use';
+import { DEFAULT_COLORS } from './UserSettings/userSettingsHandlers';
 
 const { Text } = Typography;
 
@@ -35,7 +36,7 @@ type Props = {
   isAdmin: boolean;
   courseId: number;
   refreshData: Function;
-  storedTagColors: object;
+  storedTagColors?: object;
   alias: string;
 };
 
@@ -161,7 +162,15 @@ const getColumns = (
   },
 ];
 
-export function TableView({ data, timeZone, isAdmin, courseId, refreshData, storedTagColors, alias }: Props) {
+export function TableView({
+  data,
+  timeZone,
+  isAdmin,
+  courseId,
+  refreshData,
+  storedTagColors = DEFAULT_COLORS,
+  alias,
+}: Props) {
   const [form] = Form.useForm();
   const [editingKey, setEditingKey] = useState('');
   const [hidenColumnsAndTypes, setHidenColumnsAndTypes] = useLocalStorage<string[]>('settingsTypesAndColumns', []);
@@ -213,6 +222,8 @@ export function TableView({ data, timeZone, isAdmin, courseId, refreshData, stor
   const save = async (id: number, isTask?: boolean) => {
     const updatedRow = (await form.validateFields()) as ScheduleRow;
     const index = data.findIndex(item => id === item.id);
+
+    updatedRow.organizer = updatedRow.organizer && updatedRow.organizer.githubId ? updatedRow.organizer : null;
 
     if (index > -1) {
       const editableEntity = data[index];
@@ -349,7 +360,7 @@ export function TableView({ data, timeZone, isAdmin, courseId, refreshData, stor
 const getCourseEventDataForUpdate = (entity: CourseEvent) => {
   return {
     dateTime: entity.dateTime,
-    organizerId: entity.organizerId || null,
+    organizerId: entity.organizer ? entity.organizer.githubId : null,
     place: entity.place || '',
     special: entity.special || '',
     duration: entity.duration || null,
@@ -361,7 +372,7 @@ const getCourseTaskDataForUpdate = (entity: CourseEvent) => {
 
   const dataForUpdate = {
     [taskDate]: entity.dateTime,
-    taskOwnerId: entity.organizer.id || null,
+    taskOwnerId: entity.organizer ? entity.organizer.githubId : null,
     special: entity.special || '',
     duration: entity.duration || null,
   };

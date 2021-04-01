@@ -1,10 +1,12 @@
-import { Col, Row, Select, Tooltip, Button } from 'antd';
+import { Col, Row, Select, Tooltip, Button, Form, Upload, message } from 'antd';
+import { UploadFile } from 'antd/lib/upload/interface';
+import { RcFile } from 'antd/lib/upload';
 import { EyeOutlined, EyeInvisibleOutlined, DownloadOutlined, UploadOutlined, PlusOutlined } from '@ant-design/icons';
 import { withSession, PageLayout } from 'components';
 import { TableView, CalendarView, ListView } from 'components/Schedule';
 import withCourseData from 'components/withCourseData';
 import { useState, useMemo } from 'react';
-import { CourseEvent, CourseService, CourseTaskDetails } from 'services/course';
+import { CourseEvent, CourseService, CourseTask, CourseTaskDetails } from 'services/course';
 import { CoursePageProps } from 'services/models';
 import { TIMEZONES } from '../../configs/timezones';
 import { useAsync, useLocalStorage } from 'react-use';
@@ -15,12 +17,15 @@ import UserSettings from 'components/Schedule/UserSettings/UserSettings';
 import { DEFAULT_COLORS } from 'components/Schedule/UserSettings/userSettingsHandlers';
 import ModalFormEntity from '../../components/Schedule/ModalFormEntity';
 import moment from 'moment-timezone';
+import { isUndefined } from 'lodash';
+import csv from 'csvtojson';
 
 const { Option } = Select;
 const LOCAL_VIEW_MODE = 'scheduleViewMode';
 const LOCAL_HIDE_OLD_EVENTS = 'scheduleHideOldEvents';
 
 export function SchedulePage(props: CoursePageProps) {
+  const [form] = Form.useForm();
   const [loading, withLoading] = useLoading(false);
   const [data, setData] = useState<CourseEvent[]>([]);
   const [typesFromBase, setTypesFromBase] = useState<string[]>([]);
@@ -30,6 +35,7 @@ export function SchedulePage(props: CoursePageProps) {
   const [isOldEventsHidden, setOldEventsHidden] = useLocalStorage<boolean>(LOCAL_HIDE_OLD_EVENTS, false);
   const [isModalOpen, setModalOpen] = useState(false);
   const [editableRecord, setEditableRecord] = useState(null);
+  const [fileList, setFileList] = useState<RcFile[]>([]);
   const courseService = useMemo(() => new CourseService(props.course.id), [props.course.id]);
   const relevantEvents = useMemo(() => {
     const yesterday = moment.utc().subtract(1, 'day');
@@ -72,8 +78,36 @@ export function SchedulePage(props: CoursePageProps) {
     window.location.href = `/api/course/${props.course.id}/schedule/csv`;
   };
 
-  const importFromCsv = () => {
-    window.location.href = `/api/course/${props.course.id}/schedule/csv`;
+  const handleSubmit = async (values: any) => {
+    try {
+      const results = await parseFiles(values.files);
+      const submitResults = await uploadResults(courseService, results);
+
+      if (submitResults.toString().includes('successfully')) {
+        message.success(submitResults);
+        setFileList([]);
+      } else {
+        message.error(submitResults);
+      }
+
+      await loadData();
+    } catch (e) {
+      if (e.message.match(/^Incorrect data/)) {
+        message.error(e.message);
+      } else {
+        message.error('An error occured. Please try later.');
+      }
+    }
+  };
+
+  const onRemove = (_: UploadFile<any>) => {
+    setFileList([]);
+  };
+
+  const beforeUpload = (file: RcFile) => {
+    setFileList([...fileList, file]);
+
+    return false;
   };
 
   return (
@@ -103,23 +137,38 @@ export function SchedulePage(props: CoursePageProps) {
         {props.session.isAdmin && (
           <>
             <Col>
-              <Tooltip title="Export CSV" mouseEnterDelay={1}>
+              <Tooltip title="Export schedule" mouseEnterDelay={1}>
                 <Button onClick={exportToCsv} icon={<DownloadOutlined />} />
               </Tooltip>
             </Col>
+            <Form form={form} onFinish={handleSubmit} layout="inline">
+              <Col>
+                <Form.Item label="" name="files" rules={[{ required: true, message: 'Please select csv-file' }]}>
+                  <Upload onRemove={onRemove} beforeUpload={beforeUpload} fileList={fileList}>
+                    <Tooltip title="Import schedule" mouseEnterDelay={1}>
+                      <Button icon={<UploadOutlined />} />
+                    </Tooltip>
+                  </Upload>
+                </Form.Item>
+              </Col>
+              {fileList.length > 0 && (
+                <Col>
+                  <Button type="primary" htmlType="submit" style={{ marginRight: '1.5em' }}>
+                    Import CSV
+                  </Button>
+                </Col>
+              )}
+            </Form>
             <Col>
-              <Tooltip title="Import CSV" mouseEnterDelay={1}>
-                <Button onClick={importFromCsv} icon={<UploadOutlined />} />
+              <Tooltip title="Add new" mouseEnterDelay={1}>
+                <Button
+                  type="primary"
+                  icon={<PlusOutlined />}
+                  onClick={() => {
+                    setModalOpen(true);
+                  }}
+                />
               </Tooltip>
-            </Col>
-            <Col>
-              <Button
-                type="primary"
-                icon={<PlusOutlined />}
-                onClick={() => {
-                  setModalOpen(true);
-                }}
-              />
             </Col>
           </>
         )}
@@ -208,6 +257,64 @@ const getDefaultViewMode = () => {
   }
 
   return ViewMode.TABLE;
+};
+
+const parseFiles = async (incomingFiles: any) => {
+  const files = incomingFiles.fileList;
+  const filesContent: string[] = await Promise.all(
+    files.map(
+      (file: any) =>
+        new Promise((res, rej) => {
+          const reader = new FileReader();
+          reader.readAsText(file.originFileObj, 'utf-8');
+          reader.onload = ({ target }) => res(target ? target.result : '');
+          reader.onerror = e => rej(e);
+        }),
+    ),
+  );
+
+  const entities = (await Promise.all(filesContent.map((content: string) => csv().fromString(content))))
+    .reduce((acc, cur) => acc.concat(cur), [])
+    .map((item: any) => {
+      if (isUndefined(item.entityType)) {
+        throw new Error('Incorrect data: CSV file should content the headers named "entityType"');
+      }
+      return {
+        entityType: item.entityType as string,
+        templateId: item.templateId as string,
+        id: item.id as string,
+        startDate: item.startDate as string,
+        endDate: item.endDate as string,
+        type: item.type as string,
+        special: item.special as string,
+        name: item.name as string,
+        descriptionUrl: item.descriptionUrl as string,
+        githubId: item.githubId as string,
+        place: item.place as string,
+      };
+    });
+
+  return entities;
+};
+
+const uploadResults = async (
+  courseService: CourseService,
+  data: {
+    entityType: string;
+    id: string;
+    startDate: string;
+    endDate: string;
+    type: string;
+    special: string;
+    name: string;
+    descriptionUrl: string;
+    githubId: string;
+    place: string;
+  }[],
+) => {
+  const resultsNewTasks = await courseService.postMultipleEntities(data as Partial<CourseEvent & CourseTask>);
+
+  return resultsNewTasks;
 };
 
 export default withCourseData(withSession(SchedulePage));
