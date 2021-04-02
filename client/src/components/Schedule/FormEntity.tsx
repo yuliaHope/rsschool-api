@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Task, TaskService } from 'services/task';
-import { CourseEvent, CourseService, CourseTask } from 'services/course';
+import { CourseEvent, CourseService } from 'services/course';
 import { withSession } from 'components';
 import { UserSearch } from 'components/UserSearch';
 import { UserService } from 'services/user';
@@ -299,10 +299,10 @@ const getDefaultOrganizer = (entityType: string, data: any) => {
   }
 
   if (entityType === 'task') {
-    return [data.taskOwner];
+    return data.taskOwner ? [data.taskOwner] : [];
   }
 
-  return [data.organizer];
+  return data.organizer ? [data.organizer] : [];
 };
 
 const getInitialValues = (entityType: string, data: any) => {

@@ -21,6 +21,8 @@ type EntityFromCSV = {
   descriptionUrl: string;
   githubId: string | null;
   place: string | null;
+  checker: 'auto-test' | 'mentor' | 'assigned' | 'taskOwner' | 'crossCheck' | 'jury' | null;
+  pairsCount: number | null;
 };
 
 export const getScheduleAsCsv = (_: ILogger) => async (ctx: Router.RouterContext) => {
@@ -40,6 +42,8 @@ export const getScheduleAsCsv = (_: ILogger) => async (ctx: Router.RouterContext
     descriptionUrl: item.task.descriptionUrl,
     githubId: item.taskOwner ? item.taskOwner.githubId : null,
     place: null,
+    checker: item.checker,
+    pairsCount: item.pairsCount,
   }));
   const eventsToCsv = courseEvents.map(item => ({
     entityType: 'event',
@@ -52,6 +56,8 @@ export const getScheduleAsCsv = (_: ILogger) => async (ctx: Router.RouterContext
     descriptionUrl: item.event.descriptionUrl,
     githubId: item.organizer ? item.organizer.githubId : null,
     place: item.place,
+    checker: null,
+    pairsCount: null,
   }));
 
   const csv = await parseAsync([...tasksToCsv, ...eventsToCsv]);
@@ -101,6 +107,8 @@ const saveTasks = async (tasks: EntityFromCSV[], courseId: number) => {
       studentEndDate: task.endDate || null,
       special: task.special,
       taskOwner: user,
+      checker: task.checker,
+      pairsCount: task.pairsCount,
     } as Partial<CourseTask>;
 
     if (task.templateId) {
