@@ -41,7 +41,7 @@ const TaskDetails: React.FC<Props> = ({ taskData, alias, isAdmin, isPreview, onE
     githubRepoName,
     sourceGithubRepoUrl,
     githubPrRequired,
-    publicAttributes,
+    // publicAttributes,
   } = taskData;
 
   return (

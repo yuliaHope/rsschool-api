@@ -98,6 +98,13 @@ const getEntityDataForPreview = (entityType: string, entityData: any) => {
       scoreWeight: entityData.scoreWeight,
       maxScore: entityData.maxScore,
       taskOwner: { githubId: entityData.organizerId },
+      verification: entityData.verification,
+      githubPrRequired: entityData.githubPrRequired,
+      sourceGithubRepoUrl: entityData.sourceGithubRepoUrl,
+      githubRepoName: entityData.githubRepoName,
+      // attributes: JSON.parse(entityData.attributes ?? '{}'),
+      checker: entityData.checker,
+      pairsCount: entityData.pairsCount,
     };
   }
 
