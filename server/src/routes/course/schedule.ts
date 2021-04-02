@@ -32,8 +32,8 @@ export const getScheduleAsCsv = (_: ILogger) => async (ctx: Router.RouterContext
 
   const tasksToCsv = courseTasks.map(item => ({
     entityType: 'task',
-    templateId: item.id,
-    id: item.task.id,
+    templateId: item.taskId,
+    id: item.id,
     startDate: item.studentStartDate,
     endDate: item.studentEndDate,
     type: item.type || item.task.type,
@@ -47,8 +47,8 @@ export const getScheduleAsCsv = (_: ILogger) => async (ctx: Router.RouterContext
   }));
   const eventsToCsv = courseEvents.map(item => ({
     entityType: 'event',
-    templateId: item.id,
-    id: item.eventId,
+    templateId: item.eventId,
+    id: item.id,
     startDate: item.dateTime,
     type: item.event.type,
     special: item.special,
@@ -102,18 +102,18 @@ const saveTasks = async (tasks: EntityFromCSV[], courseId: number) => {
 
     const courseTaskData = {
       courseId,
-      taskId: task.id,
+      taskId: task.templateId,
       studentStartDate: task.startDate || null,
       studentEndDate: task.endDate || null,
       special: task.special,
       taskOwner: user,
       checker: task.checker,
-      pairsCount: task.pairsCount,
+      pairsCount: task.pairsCount || null,
     } as Partial<CourseTask>;
 
     if (task.templateId) {
-      await getRepository(Task).update({ id: task.id }, taskData);
-      await getRepository(CourseTask).update({ id: task.templateId }, courseTaskData);
+      await getRepository(Task).update({ id: task.templateId }, taskData);
+      await getRepository(CourseTask).update({ id: task.id }, courseTaskData);
     } else {
       const { id } = await getRepository(Task).save(taskData);
 
@@ -138,7 +138,7 @@ const saveEvents = async (events: EntityFromCSV[], courseId: number) => {
 
     const courseEventData = {
       courseId,
-      eventId: event.id,
+      eventId: event.templateId,
       dateTime: event.startDate || null,
       special: event.special,
       organizer: user,
@@ -146,8 +146,8 @@ const saveEvents = async (events: EntityFromCSV[], courseId: number) => {
     } as Partial<CourseEvent>;
 
     if (event.templateId) {
-      await getRepository(Event).update({ id: event.id }, eventData);
-      await getRepository(CourseEvent).update({ id: event.templateId }, courseEventData);
+      await getRepository(Event).update({ id: event.templateId }, eventData);
+      await getRepository(CourseEvent).update({ id: event.id }, courseEventData);
     } else {
       const { id } = await getRepository(Event).save(eventData);
 

@@ -292,7 +292,7 @@ const parseFiles = async (incomingFiles: any) => {
         githubId: item.githubId as string,
         place: item.place as string,
         checker: item.checker as string,
-        pairsCount: item.pairsCount as number,
+        pairsCount: item.pairsCount as string,
       };
     });
 
