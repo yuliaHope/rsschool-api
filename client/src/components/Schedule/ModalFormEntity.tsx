@@ -59,6 +59,7 @@ const ModalFormEntity: React.FC<Props> = ({ visible, handleCancel, courseId, edi
                 taskData={getEntityDataForPreview(entityType, entityData) as CourseTaskDetails}
                 alias={alias}
                 isPreview
+                isAdmin
               />
             )}
             {entityType === 'event' && entityData && (

@@ -76,6 +76,7 @@ export interface CourseEvent {
   special?: string;
   duration?: number;
   isTask?: boolean;
+  checker?: 'auto-test' | 'mentor' | 'assigned' | 'taskOwner' | 'crossCheck' | 'jury';
 }
 
 export interface CourseUser {
