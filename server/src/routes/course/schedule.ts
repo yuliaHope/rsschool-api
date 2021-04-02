@@ -111,17 +111,35 @@ const saveTasks = async (tasks: EntityFromCSV[], courseId: number) => {
       pairsCount: task.pairsCount || null,
     } as Partial<CourseTask>;
 
-    if (task.templateId) {
+    // update task & courseTask
+    if (task.templateId && task.id) {
       await getRepository(Task).update({ id: task.templateId }, taskData);
       await getRepository(CourseTask).update({ id: task.id }, courseTaskData);
-    } else {
+    }
+
+    // create new courseTask
+    if (task.templateId && !task.id) {
+      await getRepository(Task).update({ id: task.templateId }, taskData);
+      const { id } = await getRepository(CourseTask).save(courseTaskData);
+
+      if (!id) {
+        throw new Error('Creating new course task failed.');
+      }
+    }
+
+    //create task & courseTask
+    if (!task.templateId) {
       const { id } = await getRepository(Task).save(taskData);
 
       if (!id) {
         throw new Error('Creating new task failed.');
       }
 
-      await getRepository(CourseTask).save({ ...courseTaskData, taskId: id });
+      const { id: courseId } = await getRepository(CourseTask).save({ ...courseTaskData, taskId: id });
+
+      if (!courseId) {
+        throw new Error('Creating new course task failed.');
+      }
     }
   }
 };
@@ -145,17 +163,35 @@ const saveEvents = async (events: EntityFromCSV[], courseId: number) => {
       place: event.place || null,
     } as Partial<CourseEvent>;
 
-    if (event.templateId) {
+    // update event & courseEvent
+    if (event.templateId && event.id) {
       await getRepository(Event).update({ id: event.templateId }, eventData);
       await getRepository(CourseEvent).update({ id: event.id }, courseEventData);
-    } else {
+    }
+
+    // create new courseEvent
+    if (event.templateId && !event.id) {
+      await getRepository(Event).update({ id: event.templateId }, eventData);
+      const { id } = await getRepository(CourseEvent).save(courseEventData);
+
+      if (!id) {
+        throw new Error('Creating new course event failed.');
+      }
+    }
+
+    //create event & courseEvent
+    if (!event.templateId) {
       const { id } = await getRepository(Event).save(eventData);
 
       if (!id) {
         throw new Error('Creating new event failed.');
       }
 
-      await getRepository(CourseEvent).save({ ...courseEventData, eventId: id });
+      const { id: courseId } = await getRepository(CourseEvent).save({ ...courseEventData, eventId: id });
+
+      if (!courseId) {
+        throw new Error('Creating new course event failed.');
+      }
     }
   }
 };
