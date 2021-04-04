@@ -93,7 +93,6 @@ export const createDisableRoute = <T extends ObjectType<{ disabled: boolean }>>(
   }
 };
 
-
 export const createMultiplePostRoute = <T extends ObjectType<T>>(entity: T, logger?: ILogger) => async (
   ctx: Router.RouterContext,
 ) => {
@@ -116,15 +115,14 @@ export const createMultiplePutRoute = <T extends ObjectType<T>>(entity: T, logge
   ctx: Router.RouterContext,
 ) => {
   const data = ctx.request.body;
-  
 
   data.forEach(async (someEntity: any) => {
-     try {
+    try {
       const result = await getRepository(entity).update(someEntity.id, someEntity);
       setResponse(ctx, OK, result);
     } catch (e) {
       if (logger) {
-         logger.error(e.message);
+        logger.error(e.message);
       }
       setResponse(ctx, BAD_REQUEST, { message: e.message });
     }
