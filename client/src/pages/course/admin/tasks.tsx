@@ -155,7 +155,6 @@ function Page(props: CoursePageProps) {
     }
   };
 
-  // TODO: Left hardcoded (codewars:stage1|codewars:stage2) configs only for backward compatibility. Delete them in the future.
   const renderModal = (modalData: Partial<CourseTaskDetails> | null) => {
     return (
       <ModalForm
@@ -183,13 +182,12 @@ function Page(props: CoursePageProps) {
             <Select.Option value="kotlintask">Kotlin task</Select.Option>
             <Select.Option value="objctask">ObjC task</Select.Option>
             <Select.Option value="htmltask">HTML task</Select.Option>
+            <Select.Option value="ipynb">Jupyter Notebook</Select.Option>
             <Select.Option value="cv:markdown">CV Markdown</Select.Option>
             <Select.Option value="cv:html">CV HTML</Select.Option>
-            <Select.Option value="selfeducation">Self Education</Select.Option>
+            <Select.Option value="selfeducation">RSAPP Test</Select.Option>
             <Select.Option value="codewars">Codewars</Select.Option>
-            <Select.Option value="codewars:stage1">Codewars stage 1</Select.Option>
-            <Select.Option value="codewars:stage2">Codewars stage 2</Select.Option>
-            <Select.Option value="test">Test</Select.Option>
+            <Select.Option value="test">Google Form Test</Select.Option>
             <Select.Option value="codejam">Code Jam</Select.Option>
             <Select.Option value="interview">Interview</Select.Option>
             <Select.Option value="stage-interview">Technical Screening</Select.Option>

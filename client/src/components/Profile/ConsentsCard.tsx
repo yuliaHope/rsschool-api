@@ -1,11 +1,13 @@
 import * as React from 'react';
 import { Consent } from '../../../../common/models/profile';
 import CommonCard from './CommonCard';
-import { NotificationOutlined, CheckOutlined, CloseOutlined } from '@ant-design/icons';
+import { NotificationOutlined, CloseSquareTwoTone, CheckSquareTwoTone } from '@ant-design/icons';
 import { List, Typography, Checkbox } from 'antd';
 import { CheckboxChangeEvent } from 'antd/lib/checkbox';
 
 const { Text } = Typography;
+
+const rsschoolBotLink = 'https://t.me/rsschool_bot?start';
 
 type Props = {
   data: Consent[];
@@ -51,40 +53,35 @@ class ConsentsCard extends React.Component<Props, State> {
 
     const listItems: any[] = [
       <List.Item>
-        <Text>Receive E-Mail notifications</Text>
-        {emailOptIn ? <CheckOutlined /> : <CloseOutlined />}
+        <Text>E-Mail notifications</Text>
+        {emailOptIn ? <CheckSquareTwoTone twoToneColor="#52c41a" /> : <CloseSquareTwoTone twoToneColor="#ff4d4f" />}
       </List.Item>,
       <List.Item>
-        <Text>Receive Telegram notifications</Text>
-        {tgOptIn ? <CheckOutlined /> : <CloseOutlined />}
+        <Text>Telegram notifications</Text>
+        {tgOptIn ? <CheckSquareTwoTone twoToneColor="#52c41a" /> : <CloseSquareTwoTone twoToneColor="#ff4d4f" />}
       </List.Item>,
     ];
 
     const settingsListItems: any[] = [
-      <List.Item>
-        {emailOptIn ? (
-          <label htmlFor={'email'}>Unsubscribe from E-Mail notifications</label>
-        ) : (
-          <label htmlFor={'email'}>Subscribe to E-Mail notifications</label>
-        )}
+      <List.Item title={`You ${emailOptIn ? 'are' : "aren't"} subscribed to email notifications`}>
+        <label htmlFor={'email'}>E-Mail notifications</label>
         <Checkbox id={'email'} checked={emailOptIn} onChange={this.onConsentChanged} />
       </List.Item>,
-      <List.Item>
-        {tgOptIn ? (
-          <label htmlFor={'tg'}>Unsubscribe from Telegram notifications</label>
-        ) : (
-          <label htmlFor={'tg'}>Subscribe to Telegram notifications</label>
-        )}
+      <List.Item
+        style={{ borderBottom: 'none' }}
+        title={`You ${tgOptIn ? 'are' : "aren't"} subscribed to telegram notifications`}
+      >
+        <label htmlFor={'tg'}>Telegram notifications</label>
         <Checkbox id={'tg'} disabled={!isTgConsentExist} checked={tgOptIn} onChange={this.onConsentChanged} />
       </List.Item>,
       !isTgConsentExist ? (
-        <List.Item>
-          Note: you must start a conversation with the{' '}
-          <Text code={true} copyable={true}>
+        <p style={{ fontSize: '11px', maxWidth: '85%', color: 'gray', marginTop: '-12px' }}>
+          Note: To enable telegram notifications please open the{' '}
+          <a target="_blank" href={rsschoolBotLink}>
             @rsschool_bot
-          </Text>{' '}
-          in order to change telegram consent
-        </List.Item>
+          </a>{' '}
+          and click the <b>Start</b> button
+        </p>
       ) : (
         <></>
       ),
@@ -92,12 +89,13 @@ class ConsentsCard extends React.Component<Props, State> {
 
     return (
       <CommonCard
-        title="Consents"
+        title="Subscriptions"
+        settingsTitle="Edit subscriptions"
         icon={<NotificationOutlined />}
         content={
           <List itemLayout="horizontal" dataSource={listItems} renderItem={listItemContent => listItemContent} />
         }
-        noDataDescrption="Consents not found"
+        noDataDescrption="Subscriptions not found"
         isEditingModeEnabled={isEditingModeEnabled}
         profileSettingsContent={
           <List

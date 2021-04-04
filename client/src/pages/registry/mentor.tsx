@@ -1,4 +1,5 @@
-import { Button, Checkbox, Tabs, Col, Form, Input, message, Result, Row, Select, Tag, Typography } from 'antd';
+import { Button, Checkbox, Tabs, Col, Form, Input, message, Result, Row, Select, Tag, Typography, Alert } from 'antd';
+import { HeartTwoTone } from '@ant-design/icons';
 import axios from 'axios';
 import { NextPageContext } from 'next';
 import { LocationSelect, PageLayout } from 'components';
@@ -12,6 +13,8 @@ import { UserFull, UserService } from 'services/user';
 import { emailPattern, epamEmailPattern, phonePattern } from 'services/validators';
 import { Course, Location } from '../../../../common/models';
 import { Props } from '../../configs/registry';
+
+const rsschoolBotLink = 'https://t.me/rsschool_bot?start';
 
 const defaultColumnSizes = { xs: 20, sm: 16, md: 12, lg: 10 };
 const textColumnSizes = { xs: 22, sm: 14, md: 12, lg: 10 };
@@ -340,6 +343,23 @@ function Page(props: Props & { courseAlias?: string }) {
             </Row>
 
             <Row>
+              <Typography.Paragraph>
+                <Alert
+                  message={
+                    <span>
+                      Subscribe to our{' '}
+                      <a href={rsschoolBotLink} target="_blank">
+                        Telegram-bot
+                      </a>{' '}
+                      to keep in touch with us.
+                    </span>
+                  }
+                  showIcon
+                />
+              </Typography.Paragraph>
+            </Row>
+
+            <Row>
               <GdprCheckbox />
             </Row>
             <Button size="large" type="primary" disabled={!form.getFieldValue('gdpr') || loading} htmlType="submit">
@@ -362,10 +382,13 @@ const SuccessComponent = () => {
   const titleCmp = (
     <Row gutter={24} justify="center">
       <Col xs={18} sm={16} md={12}>
-        <p>Thanks a lot for registration!</p>
-        <p>We will send you an email to the introduction meeting when the course is started. Stay tuned!</p>
+        <p>Your application has been saved!</p>
         <p>
-          Join our <a href="https://t.me/joinchat/HqpGRxNRANkGN2xx9bL8zQ">RSSchool Mentors FAQ</a> Telegram group.
+          Subscribe to our <a href={rsschoolBotLink}>Telegram-bot</a>. Before the start of the course, it will send you
+          the message to confirm your participation in the course and provide the next steps.
+        </p>
+        <p>
+          Thanks a lot for your interest! <HeartTwoTone twoToneColor="#eb2f96" />
         </p>
         <p>
           <Button type="primary" href="/">

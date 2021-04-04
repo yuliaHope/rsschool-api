@@ -1,5 +1,20 @@
-import { Button, Col, Table, Form, Input, message, Row, Typography, notification, Radio, Checkbox } from 'antd';
-import { ReloadOutlined } from '@ant-design/icons';
+import {
+  Button,
+  Col,
+  Table,
+  Form,
+  Input,
+  message,
+  Row,
+  Typography,
+  notification,
+  Radio,
+  Checkbox,
+  Upload,
+  Spin,
+} from 'antd';
+import { ReloadOutlined, UploadOutlined, CloseSquareTwoTone, CheckSquareTwoTone } from '@ant-design/icons';
+import { UploadFile } from 'antd/lib/upload/interface';
 import { PageLayout, withSession } from 'components';
 import { CourseTaskSelect } from 'components/Forms';
 import withCourseData from 'components/withCourseData';
@@ -11,6 +26,8 @@ import { notUrlPattern } from 'services/validators';
 import { shortDateTimeRenderer } from 'components/Table';
 import { AxiosError } from 'axios';
 import shuffle from 'lodash/shuffle';
+import snakeCase from 'lodash/snakeCase';
+import { FilesService } from 'services/files';
 
 function Page(props: CoursePageProps) {
   const courseId = props.course.id;
@@ -62,9 +79,20 @@ function Page(props: CoursePageProps) {
       return;
     }
     try {
-      const data = getSubmitData(task, values);
-      if (data == null) {
-        return;
+      let data: any = {};
+      if (task.type === 'ipynb') {
+        const filesService = new FilesService();
+        const fileData = await readFile(values.upload.file);
+        const { s3Key } = await filesService.uploadFile('', fileData);
+        data = {
+          s3Key,
+          taskName: snakeCase(task.name),
+        };
+      } else {
+        data = getSubmitData(task, values);
+        if (data == null) {
+          return;
+        }
       }
 
       setLoading(true);
@@ -167,15 +195,18 @@ function Page(props: CoursePageProps) {
                 title: 'Date/Time',
                 dataIndex: 'createdDate',
                 render: shortDateTimeRenderer,
+                width: 100,
               },
               {
                 title: 'Status',
                 dataIndex: 'status',
+                width: 100,
               },
               {
                 title: 'Task Name',
                 dataIndex: ['courseTask', 'task', 'name'],
                 ellipsis: true,
+                width: 150,
               },
               {
                 title: 'Score',
@@ -185,6 +216,41 @@ function Page(props: CoursePageProps) {
               {
                 title: 'Details',
                 dataIndex: 'details',
+                render: (value: string, item) => {
+                  if (item?.courseTask?.type === 'codewars') {
+                    return (
+                      <>
+                        <Typography.Text>{value}</Typography.Text>
+                        <div>
+                          {item?.metadata?.map(
+                            (
+                              {
+                                id,
+                                url,
+                                name,
+                                completed,
+                              }: { id: string; url: string; name: string; completed: boolean },
+                              index: number,
+                            ) => (
+                              <div>
+                                <Typography.Link key={id} href={url} target="_blank">
+                                  {completed ? (
+                                    <CheckSquareTwoTone twoToneColor="#52c41a" />
+                                  ) : (
+                                    <CloseSquareTwoTone twoToneColor="#ff4d4f" />
+                                  )}{' '}
+                                  {index}. {name}
+                                </Typography.Link>
+                              </div>
+                            ),
+                          )}
+                        </div>
+                      </>
+                    );
+                  }
+
+                  return typeof value === 'string' ? value.split('\\n').map(str => <div>{str}</div>) : value;
+                },
               },
             ]}
             dataSource={verifications}
@@ -197,6 +263,40 @@ function Page(props: CoursePageProps) {
 
 export default withCourseData(withSession(Page));
 
+function readFile(file: any) {
+  return new Promise<string>((res, rej) => {
+    const reader = new FileReader();
+    reader.readAsText(file.originFileObj, 'utf-8');
+    reader.onload = ({ target }) => res(target ? (target.result as string) : '');
+    reader.onerror = e => rej(e);
+  });
+}
+
+function UploadJupyterNotebook() {
+  const [uploadFile, setUploadFile] = useState<UploadFile | null>(null);
+  const [loading, setLoading] = useState(false);
+  const handleFileChose = async (info: any) => {
+    switch (info.file.status) {
+      case 'done': {
+        setUploadFile(info.file);
+        setLoading(false);
+        break;
+      }
+    }
+  };
+  return (
+    <Spin spinning={loading}>
+      <Form.Item name="upload">
+        <Upload fileList={uploadFile ? [uploadFile] : []} onChange={handleFileChose} multiple={false}>
+          <Button>
+            <UploadOutlined /> Select Jupyter Notebook
+          </Button>
+        </Upload>
+      </Form.Item>
+    </Spin>
+  );
+}
+
 function renderTaskFields(githubId: string, courseTask?: CourseTask) {
   const repoUrl = `https://github.com/${githubId}/${courseTask?.githubRepoName}`;
   switch (courseTask?.type) {
@@ -205,6 +305,12 @@ function renderTaskFields(githubId: string, courseTask?: CourseTask) {
     case 'kotlintask':
     case 'objctask':
       return renderKotlinTaskFields(repoUrl);
+    case 'ipynb':
+      return (
+        <Row>
+          <UploadJupyterNotebook />
+        </Row>
+      );
     case 'selfeducation':
       return (
         <>
@@ -212,13 +318,11 @@ function renderTaskFields(githubId: string, courseTask?: CourseTask) {
           {renderSelfEducation(courseTask)}
         </>
       );
-    // TODO: Left hardcoded (codewars:stage1|codewars:stage2) configs only for backward compatibility. Delete them in the future.
-    case 'codewars':
-    case 'codewars:stage1':
-    case 'codewars:stage2': {
+    case 'codewars': {
       return (
         <>
           {renderDescription(courseTask.descriptionUrl)}
+          {explanationsSubmissionTasks()}
           <Form.Item
             name="codewars"
             label="Codewars Account"
@@ -244,7 +348,7 @@ function renderSelfEducation(courseTask: CourseTask) {
       <Typography.Paragraph>To submit the task answer the questions.</Typography.Paragraph>
       <Typography.Paragraph>
         <Typography.Text mark strong>
-          Note: You must to score at least {tresholdPercentage}% of points to pass. You have only {maxAttemptsNumber}{' '}
+          Note: You must score at least {tresholdPercentage}% of points to pass. You have only {maxAttemptsNumber}{' '}
           attempts. {!strictAttemptsMode && 'After limit attemps is over you can get only half a score.'}
         </Typography.Text>
       </Typography.Paragraph>
@@ -292,6 +396,7 @@ function renderJsTaskFields(repoUrl: string) {
       <Typography.Paragraph type="warning">
         IMPORTANT: Tests are run using NodeJS 12. Please make sure your solution works in NodeJS 12.
       </Typography.Paragraph>
+      {explanationsSubmissionTasks()}
     </Row>
   );
 }
@@ -331,11 +436,7 @@ function filterAutoTestTasks(tasks: CourseTask[]) {
   return tasks.filter(
     task =>
       task.studentEndDate &&
-      (new Date(task.studentEndDate).getTime() > Date.now() ||
-        task.type === 'codewars' ||
-        // TODO: Left hardcoded (codewars:stage1|codewars:stage2) configs only for backward compatibility. Delete them in the future.
-        task.type === 'codewars:stage1' ||
-        task.type === 'codewars:stage2') &&
+      new Date(task.studentEndDate).getTime() > Date.now() &&
       (task.verification === 'auto' || task.checker === 'auto-test') &&
       task.checker !== 'taskOwner' &&
       task.type !== 'test',
@@ -358,10 +459,7 @@ function getSubmitData(task: CourseTask, values: any) {
           return { index: Number(index), value };
         });
       break;
-    // TODO: Left hardcoded (codewars:stage1|codewars:stage2) configs only for backward compatibility. Delete them in the future.
     case 'codewars':
-    case 'codewars:stage1':
-    case 'codewars:stage2':
       if (!values.codewars) {
         message.error('Enter Account');
         return null;
@@ -370,8 +468,6 @@ function getSubmitData(task: CourseTask, values: any) {
       data = {
         codewars: values.codewars,
         deadline: task.studentEndDate,
-        // TODO: Left hardcoded (codewars:stage1|codewars:stage2) configs only for backward compatibility. Delete them in the future.
-        variant: task.type !== 'codewars' ? task.type.split(':')[1] : undefined,
       };
       break;
 
@@ -395,4 +491,13 @@ function getSubmitData(task: CourseTask, values: any) {
   }
 
   return data;
+}
+
+function explanationsSubmissionTasks() {
+  return (
+    <Typography.Paragraph>
+      You can submit your solution as many times as you need before the deadline. Without fines. After the deadline, the
+      submission will be closed.
+    </Typography.Paragraph>
+  );
 }
