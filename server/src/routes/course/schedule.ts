@@ -1,13 +1,12 @@
+import { getRepository, getConnection } from 'typeorm';
 import { OK } from 'http-status-codes';
 import { parseAsync } from 'json2csv';
 import Router from '@koa/router';
-import { ILogger } from '../../logger';
-import { getCourseTasks, getEvents } from '../../services/course.service';
-import { getUserByGithubId } from '../../services/user.service';
-import { setCsvResponse, setResponse } from '../utils';
-import { getRepository } from 'typeorm';
 import { Task, CourseTask, Event, CourseEvent } from '../../models';
-import { getConnection } from 'typeorm';
+import { ILogger } from '../../logger';
+import { getCourseTasksWithOwner, getEvents } from '../../services/course.service';
+import { getUserByGithubId } from '../../services/user.service';
+import { setCsvResponse, setResponse, dateFormatter } from '../utils';
 
 type EntityFromCSV = {
   entityType: 'task' | 'event';
@@ -27,15 +26,15 @@ type EntityFromCSV = {
 
 export const getScheduleAsCsv = (_: ILogger) => async (ctx: Router.RouterContext) => {
   const courseId = Number(ctx.params.courseId);
-  const courseTasks = await getCourseTasks(courseId);
+  const courseTasks = await getCourseTasksWithOwner(courseId);
   const courseEvents = await getEvents(courseId);
 
   const tasksToCsv = courseTasks.map(item => ({
     entityType: 'task',
     templateId: item.taskId,
     id: item.id,
-    startDate: item.studentStartDate,
-    endDate: item.studentEndDate,
+    startDate: dateFormatter(item.studentStartDate, 'YYYY-MM-DD HH:mm'),
+    endDate: dateFormatter(item.studentEndDate, 'YYYY-MM-DD HH:mm'),
     type: item.type || item.task.type,
     special: item.special,
     name: item.task.name,
@@ -49,7 +48,7 @@ export const getScheduleAsCsv = (_: ILogger) => async (ctx: Router.RouterContext
     entityType: 'event',
     templateId: item.eventId,
     id: item.id,
-    startDate: item.dateTime,
+    startDate: dateFormatter(item.dateTime, 'YYYY-MM-DD HH:mm'),
     type: item.event.type,
     special: item.special,
     name: item.event.name,
@@ -60,7 +59,9 @@ export const getScheduleAsCsv = (_: ILogger) => async (ctx: Router.RouterContext
     pairsCount: null,
   }));
 
-  const csv = await parseAsync([...tasksToCsv, ...eventsToCsv]);
+  const csv = await parseAsync(
+    [...tasksToCsv, ...eventsToCsv].sort((a, b) => new Date(a.startDate).getTime() - new Date(b.startDate).getTime()),
+  );
 
   setCsvResponse(ctx, OK, csv, `schedule_${courseId}`);
 };
