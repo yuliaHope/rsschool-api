@@ -2,11 +2,14 @@ import { getRepository, getConnection } from 'typeorm';
 import { OK } from 'http-status-codes';
 import { parseAsync } from 'json2csv';
 import Router from '@koa/router';
+import moment from 'moment-timezone';
 import { Task, CourseTask, Event, CourseEvent } from '../../models';
 import { ILogger } from '../../logger';
 import { getCourseTasksWithOwner, getEvents } from '../../services/course.service';
 import { getUserByGithubId } from '../../services/user.service';
 import { setCsvResponse, setResponse, dateFormatter } from '../utils';
+
+const DEFAULT_TIMEZONE = 'Europe/Minsk';
 
 type EntityFromCSV = {
   entityType: 'task' | 'event';
@@ -26,6 +29,7 @@ type EntityFromCSV = {
 
 export const getScheduleAsCsv = (_: ILogger) => async (ctx: Router.RouterContext) => {
   const courseId = Number(ctx.params.courseId);
+  const timeZone = ctx.params.timeZone ? ctx.params.timeZone.replace('_', '/') : DEFAULT_TIMEZONE;
   const courseTasks = await getCourseTasksWithOwner(courseId);
   const courseEvents = await getEvents(courseId);
 
@@ -33,8 +37,8 @@ export const getScheduleAsCsv = (_: ILogger) => async (ctx: Router.RouterContext
     entityType: 'task',
     templateId: item.taskId,
     id: item.id,
-    startDate: dateFormatter(item.studentStartDate, 'YYYY-MM-DD HH:mm'),
-    endDate: dateFormatter(item.studentEndDate, 'YYYY-MM-DD HH:mm'),
+    startDate: dateFormatter(item.studentStartDate, timeZone, 'YYYY-MM-DD HH:mm'),
+    endDate: dateFormatter(item.studentEndDate, timeZone, 'YYYY-MM-DD HH:mm'),
     type: item.type || item.task.type,
     special: item.special,
     name: item.task.name,
@@ -48,7 +52,7 @@ export const getScheduleAsCsv = (_: ILogger) => async (ctx: Router.RouterContext
     entityType: 'event',
     templateId: item.eventId,
     id: item.id,
-    startDate: dateFormatter(item.dateTime, 'YYYY-MM-DD HH:mm'),
+    startDate: dateFormatter(item.dateTime, timeZone, 'YYYY-MM-DD HH:mm'),
     type: item.event.type,
     special: item.special,
     name: item.event.name,
@@ -68,6 +72,7 @@ export const getScheduleAsCsv = (_: ILogger) => async (ctx: Router.RouterContext
 
 export const setScheduleFromCsv = (logger: ILogger) => async (ctx: Router.RouterContext) => {
   const courseId = Number(ctx.params.courseId);
+  const timeZone = ctx.params.timeZone ? ctx.params.timeZone.replace('_', '/') : DEFAULT_TIMEZONE;
   const data = ctx.request.body as EntityFromCSV[];
 
   const tasks = data.filter((entity: EntityFromCSV) => entity.entityType === 'task');
@@ -77,8 +82,8 @@ export const setScheduleFromCsv = (logger: ILogger) => async (ctx: Router.Router
 
   await queryRunner.startTransaction();
   try {
-    await saveTasks(tasks, courseId);
-    await saveEvents(events, courseId);
+    await saveTasks(tasks, courseId, timeZone);
+    await saveEvents(events, courseId, timeZone);
     await queryRunner.commitTransaction();
   } catch (err) {
     logger.error(err.message);
@@ -91,7 +96,7 @@ export const setScheduleFromCsv = (logger: ILogger) => async (ctx: Router.Router
   }
 };
 
-const saveTasks = async (tasks: EntityFromCSV[], courseId: number) => {
+const saveTasks = async (tasks: EntityFromCSV[], courseId: number, timeZone: string) => {
   for await (const task of tasks) {
     const taskData = {
       name: task.name,
@@ -104,8 +109,8 @@ const saveTasks = async (tasks: EntityFromCSV[], courseId: number) => {
     const courseTaskData = {
       courseId,
       taskId: task.templateId,
-      studentStartDate: task.startDate || null,
-      studentEndDate: task.endDate || null,
+      studentStartDate: moment(task.startDate).tz(timeZone).toISOString() || null,
+      studentEndDate: moment(task.endDate).tz(timeZone).toISOString() || null,
       special: task.special,
       taskOwner: user,
       checker: task.checker,
@@ -145,7 +150,7 @@ const saveTasks = async (tasks: EntityFromCSV[], courseId: number) => {
   }
 };
 
-const saveEvents = async (events: EntityFromCSV[], courseId: number) => {
+const saveEvents = async (events: EntityFromCSV[], courseId: number, timeZone: string) => {
   for await (const event of events) {
     const eventData: Partial<Event> = {
       name: event.name,
@@ -158,7 +163,7 @@ const saveEvents = async (events: EntityFromCSV[], courseId: number) => {
     const courseEventData = {
       courseId,
       eventId: event.templateId,
-      dateTime: event.startDate || null,
+      dateTime: moment(event.startDate).tz(timeZone).toISOString() || null,
       special: event.special,
       organizer: user,
       place: event.place || null,

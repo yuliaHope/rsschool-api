@@ -1,7 +1,7 @@
 import { IApiResponse } from '../models';
 import Router from '@koa/router';
 import * as crypto from 'crypto';
-import moment from 'moment';
+import moment from 'moment-timezone';
 
 export function setResponse<T>(
   ctx: Router.RouterContext | Router.RouterContext<any, any>,
@@ -60,4 +60,5 @@ export function compareSignatures(signature: string, comparisonSignature: string
   return crypto.timingSafeEqual(source, comparison);
 }
 
-export const dateFormatter = (date: string, format: string) => (date ? moment(date).format(format) : '');
+export const dateFormatter = (date: string, timeZone: string, format: string) =>
+  date ? moment(date).tz(timeZone).format(format) : '';
